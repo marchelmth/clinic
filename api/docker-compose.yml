@@ -42,4 +42,8 @@ services:
       - app
       
 volumes:
+<<<<<<< HEAD
   db_data:
+=======
+  db_data:
+>>>>>>> 7e6f533268f94a00f73f89b3314baafba906791c
