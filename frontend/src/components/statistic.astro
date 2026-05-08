@@ -1,7 +1,13 @@
 ---
 import api from "../services/api.js";
-const response = await fetch(`${api}/doctors`);
-const data = await response.json();
+let doctors = [];
+
+try {
+	const { data: response } = await api.get("/api/doctors");
+	doctors = response?.data ?? [];
+} catch {
+	doctors = [];
+}
 ---
 
-<p class="h2 fw-bold text-dark mb-0">{data.length}</p>
+<p class="h2 fw-bold text-dark mb-0">{doctors.length}</p>

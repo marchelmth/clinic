@@ -1,0 +1,19 @@
+
+---
+import  { Image } from "astro:assets";
+const { cssClass} = Astro.props
+const profilePicture = "https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=000&color=ffff&size=100";
+---
+
+<a href="/signup" class="d-none d-lg-block">
+	<Image
+        src={profilePicture}
+        alt="Profile"
+        width={35}
+        height={35}
+        class={`img-fluid mx-lg-5 ${cssClass || ''}`}
+        loading="eager" 
+        fetchpriority="high"
+    />
+    <slot/>
+</a>

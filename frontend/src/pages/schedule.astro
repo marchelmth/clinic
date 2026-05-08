@@ -1,110 +1,27 @@
 ---
 import Layout from "../layouts/layouts.astro";
-import Links from "../components/links.astro";
 import FetchDataDoctors from "../components/doctorPanel.astro";
-
+import Header from "../components/header.astro";
 const title = "Klinik Sehat | Jadwal Dokter";
 ---
 
 <Layout title={title}>
-    <header>
-        <nav class="navbar navbar-expand-lg bg-white">
-            <div class="container-fluid text-center font-iosevka">
-                <Links
-                    href="/"
-                    cssClass="navbar-brand mx-5 text-dark"
-                >
-                    <strong>Klinik Sehat</strong>
-                </Links>
-                <button
-                    class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div
-                    class="collapse navbar-collapse align-items-center"
-                    id="navbarSupportedContent"
-                >
-                    <ul class="navbar-nav mx-auto gap-3 mb-2 mb-lg-0 gx-5">
-                        <li class="nav-item">
-                            <Links
-                                href="/"
-                                cssClass="nav-link text-dark"
-                            >
-                                Beranda
-                            </Links>
-                        </li>
-                        <li class="nav-item">
-                            <Links
-                                href="/schedule"
-                                cssClass="nav-link active text-dark fw-bold"
-                            >
-                                Jadwal Dokter
-                            </Links>
-                        </li>
-                        <li class="nav-item">
-                            <Links
-                                href="/reservation"
-                                cssClass="nav-link text-dark"
-                            >
-                                Reservasi
-                            </Links>
-                        </li>
-                        <li class="nav-item">
-                            <Links
-                                href="/queue"
-                                cssClass="nav-link text-dark"
-                            >
-                                Antrean
-                            </Links>
-                        </li>
-                        <li class="nav-item d-lg-none">
-                            <!-- If display Large this list would be hidden  -->
-                            <Links
-                                href="/signup"
-                                cssClass="nav-link text-dark"
-                                content="Profil"
-                            />
-                        </li>
-                    </ul>
-                    <Links href="/signup" cssClass="d-none d-lg-none">
-                        Minda Musuma
-                    </Links>
-                    <a href="/signup" class="d-none d-lg-block">
-                        <!-- if display under large this picture would be active-->
-                        <picture class="mx-5">
-                            <source
-                                srcset="https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=000&color=ffff&size=100"
-                                type="image/png"
-                            />
-                            <img
-                                src="https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=0000&color=ffff&size=100"
-                                width="35"
-                                height="35"
-                                class="img-fluid"
-                            />
-                        </picture>
-                    </a>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <Header Page="Jadwal Dokter" />
 
-    <div class="container mx-5 mt-4 font-iosevka">
-        <div class="mb-4">
-            <h2 class="fw-bold">Jadwal Dokter</h2>
-            <p class="text-muted">
-                Lihat jadwal praktek dokter dan buat janji temu
-            </p>
+    <div class="container-fluid px-3 px-sm-4 px-lg-5 mt-4 font-iosevka">
+        <div class="row">
+            <div class="col-9 col-md-8 col-lg-7">
+                <h1 class="hero-title display-6 mb-2 text-break">
+                    Jadwal Dokter
+                </h1>
+                <p class="hero-subtitle text-muted fs-6 mb-3">
+                    Lihat jadwal dokter di Klinik Sehat dan buat reservasi
+                    untuk kunjungan Anda.
+                </p>
+            </div>
         </div>
 
-        <div class="card p-4 mb-5">
+            <!-- <div class="card p-4 mb-4">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label small fw-bold">Spesialisasi</label>
@@ -131,8 +48,8 @@ const title = "Klinik Sehat | Jadwal Dokter";
                     </select>
                 </div>
             </div>
-        </div>
+        </div> -->
 
-        <FetchDataDoctors />  
+        <FetchDataDoctors />
     </div>
 </Layout>

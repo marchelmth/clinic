@@ -1,0 +1,69 @@
+---
+const { cssClass = "", Page = "" } = Astro.props;
+import ProfilePicture from "../components/profilePicture.astro";
+import Links from "../components/links.astro";
+
+const currentPage = Page; 
+---
+
+<!-- Header -->
+    <header class={cssClass}>
+        <nav class="navbar navbar-expand-lg bg-white">
+            <div class="container-fluid text-center font-iosevka">
+                <a class="navbar-brand mx-0 mx-lg-5 text-dark" href="/">
+                    <strong>Klinik Sehat</strong></a
+                >
+                <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div
+                    class="collapse navbar-collapse align-items-center"
+                    id="navbarSupportedContent"
+                >
+                    <ul class="navbar-nav mx-auto gap-3 mb-2 mb-lg-0 gx-5">
+                        <li class="nav-item">
+                            <Links
+                                href="/"
+                                cssClass={`nav-link text-dark ${currentPage === 'Beranda' ? 'active fw-bold' : ''}`}
+                            >
+                                Beranda
+                            </Links>
+                        </li>
+                        <li class="nav-item">
+                            <Links
+                                href="/schedule"
+                                cssClass={`nav-link text-dark ${currentPage === 'Jadwal Dokter' ? 'active fw-bold' : ''}`}
+                            >
+                                Jadwal Dokter
+                            </Links>
+                        </li>
+                        <li class="nav-item">
+                            <Links
+                                href="/reservation"
+                                cssClass={`nav-link text-dark ${currentPage === 'Reservasi' ? 'active fw-bold' : ''}`}
+                            >
+                                Reservasi
+                            </Links>
+                        </li>
+                        <li class="nav-item">
+                            <Links
+                                href="/queue"
+                                cssClass={`nav-link text-dark ${currentPage === 'queue' ? 'active fw-bold' : ''}`}
+                            >
+                                Antrean
+                            </Links>
+                        </li>
+                    </ul>
+                    <ProfilePicture cssClass="d-none d-lg-block" />
+                </div>
+            </div>
+        </nav>
+    </header>

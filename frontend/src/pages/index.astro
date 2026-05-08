@@ -1,93 +1,14 @@
 ---
 import Layout from "../layouts/layouts.astro";
 import Counting from "../components/counting.astro";
+import Header from "../components/header.astro";	
 const title = "Klinik Sehat | Beranda";
+
 ---
 
 <Layout {title}>
 	<!-- Header -->
-	<header>
-		<nav class="navbar navbar-expand-lg bg-white">
-			<div class="container-fluid text-center font-iosevka">
-				<a class="navbar-brand mx-0 mx-lg-5 text-dark" href="/">
-					<strong>Klinik Sehat</strong></a
-				>
-				<button
-					class="navbar-toggler"
-					type="button"
-					data-bs-toggle="collapse"
-					data-bs-target="#navbarSupportedContent"
-					aria-controls="navbarSupportedContent"
-					aria-expanded="false"
-					aria-label="Toggle navigation"
-				>
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div
-					class="collapse navbar-collapse align-items-center"
-					id="navbarSupportedContent"
-				>
-					<ul class="navbar-nav mx-auto gap-3 mb-2 mb-lg-0 gx-5">
-						<li class="nav-item">
-							<a
-								class="nav-link active text-dark fw-bold"
-								aria-current="page"
-								href="/">Beranda</a
-							>
-						</li>
-						<li class="nav-item">
-							<a
-								class="nav-link text-dark"
-								aria-current="page"
-								href="/schedule">Jadwal Dokter</a
-							>
-						</li>
-						<li class="nav-item">
-							<a
-								class="nav-link text-dark"
-								aria-current="page"
-								href="/reservation">Reservasi</a
-							>
-						</li>
-						<li class="nav-item">
-							<a
-								class="nav-link text-dark"
-								aria-current="page"
-								href="/queue">Antrean</a
-							>
-						</li>
-						<li class="nav-item d-lg-none">
-							<!-- If display Large this list would be hidden  -->
-							<a class="nav-link text-dark" href="/signup">
-								<img
-									src="https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=000&color=ffff&size=100"
-									width="35"
-									height="35"
-									class="img-fluid me-2"
-								/>
-								Minda Musuma
-							</a>
-						</li>
-					</ul>
-					<a href="/signup" class="d-none d-lg-block">
-						<!-- if display under large this list would be active-->
-						<picture class="mx-0 mx-lg-5">
-							<source
-								srcset="https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=000&color=ffff&size=100"
-								type="image/png"
-							/>
-							<img
-								src="https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=0000&color=ffff&size=100"
-								width="35"
-								height="35"
-								class="img-fluid"
-							/>
-						</picture>
-					</a>
-				</div>
-			</div>
-		</nav>
-	</header>
+	<Header Page={title.split(" | ")[1]} />
 
 	<div class="container-fluid px-3 px-sm-4 px-lg-5 mt-4 font-iosevka">
 		<div class="row">
@@ -123,7 +44,7 @@ const title = "Klinik Sehat | Beranda";
 			<div class="card h-100 border-0 shadow-sm p-3 custom-card">
 				<div class="d-flex align-items-center justify-content-between">
 					<div>
-						<p class="text-muted small mb-1">Janji Hari Ini</p>
+						<p class="text-muted small mb-1">Antrean Hari Ini</p>
 						<p class="h2 fw-bold text-dark mb-0">3</p>
 					</div>
 					<div class="bg-success p-2 rounded-2 text-white">
@@ -161,11 +82,13 @@ const title = "Klinik Sehat | Beranda";
 	</div>
 
 	<!-- Jadwal Klinik -->
-	<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 px-3 px-sm-4 px-lg-5 mt-5">
+	<div
+		class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 px-3 px-sm-4 px-lg-5 mt-5"
+	>
 		<div class="col">
 			<div class="card h-55 border-0 shadow-sm p-1 custom-card">
 				<div class="card-body text-center font-iosevka">
-					<h5 class="card-title">JADWAL PRAKTEK</h5>
+					<h5 class="card-title">JADWAL PRAKTEK KLINIK</h5>
 					<hr />
 					<p class="card-text">
 						<small class="text-muted">Senin -</small>
@@ -204,9 +127,7 @@ const title = "Klinik Sehat | Beranda";
 							<div
 								class="card border-0 shadow-sm p-1 custom-card"
 							>
-								<div
-									class="card-body d-flex text-center gap-3"
-								>
+								<div class="card-body d-flex text-center gap-3">
 									<p class="ms-5">#001</p>
 									<div class="ms-4">
 										<p class="mb-0 fw-bold">Minda Musuma</p>
@@ -219,9 +140,7 @@ const title = "Klinik Sehat | Beranda";
 							<div
 								class="card border-0 shadow-sm p-1 custom-card mt-2"
 							>
-								<div
-									class="card-body d-flex text-center gap-3"
-								>
+								<div class="card-body d-flex text-center gap-3">
 									<p class="ms-5">#002</p>
 									<div class="ms-4">
 										<p class="mb-0 fw-bold">Minda Musuma</p>
@@ -234,9 +153,7 @@ const title = "Klinik Sehat | Beranda";
 							<div
 								class="card border-0 shadow-sm p-1 custom-card mt-2"
 							>
-								<div
-									class="card-body d-flex text-center gap-3"
-								>
+								<div class="card-body d-flex text-center gap-3">
 									<p class="ms-5">#003</p>
 									<div class="ms-4">
 										<p class="mb-0 fw-bold">Minda Musuma</p>
@@ -272,14 +189,4 @@ const title = "Klinik Sehat | Beranda";
 			</div>
 		</div>
 	</div>
-
-	<style>
-		.hero-title {
-			font-size: clamp(1.9rem, 4vw, 2.5rem);
-		}
-
-		.hero-subtitle {
-			font-size: clamp(1rem, 1.5vw, 1.25rem);
-		}
-	</style>
 </Layout>
