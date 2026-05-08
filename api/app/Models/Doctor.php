@@ -12,12 +12,13 @@ class Doctor extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
     
     protected $fillable = [
-        'id',
         'name',
         'specialization',
         'phone',
         'email',
-        'status'
+        'status',
+        'schedule_id',
+        'room'
     ];
 
     protected $hidden = [

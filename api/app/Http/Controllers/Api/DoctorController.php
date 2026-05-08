@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
 use App\Helpers\ApiResponse;
-use App\Http\Resources\DoctorResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,11 +12,11 @@ class DoctorController extends Controller
 {
     public function index()
     {
-        $doctors = Doctor::all();
+        $doctors = Doctor::with('schedules')->get();
         if ($doctors->isEmpty()) {
             return ApiResponse::error("No doctors found", 404);
         }
-        return ApiResponse::success("Doctors retrieved successfully", new DoctorResource($doctors), 200);
+        return ApiResponse::success("Doctors retrieved successfully", $doctors, 200);
     }
 
     public function store(Request $request)
@@ -26,7 +25,8 @@ class DoctorController extends Controller
             'name' => 'required|string|max:255',
             'specialization' => 'nullable|string|max:255',
             'phone' => 'required|integer|min:9|unique:doctors,phone',
-            'email' => 'required|email|unique:doctors,email'
+            'email' => 'required|email|unique:doctors,email',
+            'room' => 'nullable|integer|digits_between:1,3'
         ]);
 
         if ($validator->fails()) {
@@ -62,7 +62,9 @@ class DoctorController extends Controller
             'name' => 'string|max:255',
             'specialization' => 'string|max:255',
             'phone' => 'integer|min:9|unique:doctors,phone',
-            'email' => 'email|unique:doctors,email'
+            'email' => 'email|unique:doctors,email',
+            'schedule_id' => 'integer|exists:schedules,id',
+            'room' => 'nullable|integer|digits_between:1,3'
         ]);
 
         if ($validator->fails()) {

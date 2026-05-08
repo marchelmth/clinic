@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigInteger('phone')->unique();
             $table->string('email')->unique();
             $table->string('status')->default('active');
+            $table->integer('schedule_id')->default(1);
             $table->timestamps();
         });
 

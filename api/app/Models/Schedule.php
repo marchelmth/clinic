@@ -14,6 +14,11 @@ class Schedule extends Model
         'quota'
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
     public function doctor()
     {
         return $this->belongsTo(Doctor::class);
