@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 const { cssClass } = Astro.props;
 const fallbackName = "User";
 const fallbackAvatar = `https://ui-avatars.com/api/?rounded=true&name=${fallbackName}&background=000&color=ffff&size=100`;
@@ -19,7 +20,7 @@ const fallbackAvatar = `https://ui-avatars.com/api/?rounded=true&name=${fallback
         class="d-none"
         aria-label="Profile"
     >
-        <img
+        <Image
             id="profilePicture"
             src={fallbackAvatar}
             alt="Profile"

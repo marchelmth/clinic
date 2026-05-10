@@ -79,11 +79,13 @@ const currentPage = Page;
 
         if (resLink) {
             resLink.classList.add("disabled");
+            resLink.classList.add("text-muted");
             resLink.setAttribute("tabindex", "-1");
             resLink.style.pointerEvents = "none";
         }
         if (queueLink) {
             queueLink.classList.add("disabled");
+            queueLink.classList.add("text-muted");
             queueLink.setAttribute("tabindex", "-1");
             queueLink.style.pointerEvents = "none";
         }
