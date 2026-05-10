@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
 use App\Helpers\ApiResponse;
+use Illuminate\Support\Facades\Validator;
 
 class ReservationController extends Controller
 {
@@ -45,9 +46,14 @@ class ReservationController extends Controller
     // CREATE reservation
     public function store(Request $request)
     {
-        $request->validate([
-            'schedule_id' => 'required|exists:schedules,id|integer'
+        $validator = Validator::make($request->all(), [
+            'schedule_id' => 'required|exists:schedules,id|integer',
+            'keluhan' => 'nullable|string|max:255'
         ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error($validator->errors(), 400);
+        }
 
         $schedule = Schedule::findOrFail($request->schedule_id);
 
@@ -75,7 +81,8 @@ class ReservationController extends Controller
         $reservation = Reservation::create([
             'user_id' => $request->user()->id,
             'schedule_id' => $schedule->id,
-            'status' => 'pending'
+            'status' => 'pending',
+            'keluhan' => $request->keluhan
         ]);
 
         return ApiResponse::success(

@@ -12,12 +12,14 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
 
             $table->foreignId('schedule_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->text('keluhan')->nullable();
 
             $table->string('status')->default('pending');
 

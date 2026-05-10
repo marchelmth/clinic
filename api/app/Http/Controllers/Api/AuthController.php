@@ -58,7 +58,7 @@ class AuthController extends Controller
         }
 
         if ($user->email_verified_at === null) {
-            return ApiResponse::error('Email Must Be Verified' , 403);
+            return ApiResponse::error('Email Must Be Verified', 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

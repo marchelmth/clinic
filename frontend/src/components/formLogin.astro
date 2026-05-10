@@ -1,0 +1,137 @@
+---
+import api from "../services/api";
+
+const apiBaseUrl = api.defaults.baseURL;
+---
+
+<form id="loginForm" novalidate>
+    <div class="mb-3">
+        <label class="form-label fw-medium" for="email">Email</label>
+        <input
+            id="email"
+            type="email"
+            class="form-control bg-body-secondary"
+            placeholder="Masukkan email"
+            required
+        />
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label fw-medium" for="password">Password</label>
+        <input
+            id="password"
+            placeholder="Silakan isi password..."
+            class="form-control bg-body-secondary"
+            type="password"
+            required
+        />
+    </div>
+</form>
+
+<div class="d-grid">
+    <button type="submit" class="btn btn-success btn-md text-white" form="loginForm">
+        Simpan
+    </button>
+</div>
+
+<div>
+    <p class="text-center mt-3">
+        Belum punya akun? <a href="/signup">Daftar di sini</a>
+    </p>
+</div>
+
+<script type="module" is:inline define:vars={{ apiBaseUrl}}>
+
+    document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            if (!email) {
+                alert("Masukkan email.");
+                return;
+            }
+
+            if (!password) {
+                alert("Masukkan password.");
+                return;
+            }
+
+            const loginData = {
+                email: email,
+                password: password,
+            };
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify(loginData),
+                });
+                const responseBody = await response.text();
+                const data = responseBody
+                    ? (() => {
+                          try {
+                              return JSON.parse(responseBody);
+                          } catch {
+                              return {};
+                          }
+                      })()
+                    : {};
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                            `Request gagal dengan status ${response.status}`,
+                    );
+                }
+
+                const token = data.data?.token;
+                const user = data.data?.user;
+
+                if (!token) {
+                    throw new Error("Token login tidak ditemukan dari server.");
+                }
+
+                const nameParts = (user?.name || "").trim().split(/\s+/);
+                const firstName = nameParts[0] || "";
+                const lastName =
+                    nameParts.length > 1
+                        ? nameParts[nameParts.length - 1]
+                        : "";
+                const profileName = [firstName, lastName]
+                    .filter(Boolean)
+                    .join(" ");
+
+                localStorage.setItem("auth_token", token);
+                localStorage.setItem(
+                    "auth_user",
+                    JSON.stringify({
+                        ...(user || {}),
+                        first_name: firstName,
+                        last_name: lastName,
+                        profile_name: profileName,
+                    }),
+                );
+                localStorage.setItem("profile_name", profileName);
+
+                console.log("Success:", data);
+                alert("Login berhasil!");
+                document.getElementById("loginForm").reset();
+                window.location.href = "/";
+            } catch (err) {
+                console.error("Error:", err);
+                alert(
+                    err instanceof Error
+                        ? err.message
+                        : "Terjadi kesalahan saat login.",
+                );
+            }
+        });
+</script>

@@ -1,0 +1,19 @@
+---
+
+---
+
+<!DOCTYPE html>
+<html lang="en">
+    <button id="logoutButton" class="btn btn-secondary">
+        Logout
+    </button>
+</html>
+
+<script type="module">
+    document.getElementById("logoutButton").addEventListener("click", function() {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_user");
+        localStorage.removeItem("profile_name");
+        window.location.href = "/";
+    });
+</script>

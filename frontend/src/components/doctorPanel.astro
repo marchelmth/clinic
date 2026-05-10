@@ -33,65 +33,62 @@ if (!doctor) {
 ---
 
 <div class="row g-3 me-0">
-            {
-                Array.isArray(doctors) ? (
-                    doctors.map((doctor) => (
-                        <div class="col-md-6 mb-">
-                            <div class="card p-4 h-100 shadow-sm">
-                                <div class="mb-0">
-                                    <h4 class="fw-bold mb-1">Dr. {doctor.name}</h4>
-                                    <p class="text-primary mb-0">Spesialis {doctor.specialization}</p>
-                                </div>
+    {
+        Array.isArray(doctors) ? (
+            doctors.map((doctor) => (
+                <div class="col-md-6 mb-">
+                    <div class="card p-4 h-100 shadow-sm">
+                        <div class="mb-0">
+                            <h4 class="fw-bold mb-1">Dr. {doctor.name}</h4>
+                            <p class="text-primary mb-0">
+                                Spesialis {doctor.specialization}
+                            </p>
+                        </div>
 
-                                <hr class="text-light-emphasis" />
+                        <hr class="text-light-emphasis" />
 
-                                <div class="mb-4">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i
-                                            class="bi bi-calendar3 me-3 text-secondary"
-                                        ></i>
-                                        <div>
-                                            <span class="d-block fw-bold">
-                                                {/* Tanggal jadwal */}
-                                                {doctor.schedules[0]?.date || "Jadwal Belum Tersedia"}
-                                            </span>
-                                            <small class="text-muted">
-                                                {/* Jam jadwal */}
-                                                {
-                                                    doctor.schedules[0] 
-                                                        ? `${doctor.schedules[0].start_time.replace(/:00$/, '')} - ${doctor.schedules[0].end_time.replace(/:00$/, '')}`
-                                                        : "Jam Belum Tersedia"
-                                                }
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-geo-alt me-3 text-secondary"
-                                        ></i>
-                                        <span>
-                                            {/* Ruang dokter */}
-                                            {
-                                                doctor.room ? `Ruang ${doctor.room}` : "Ruang Belum Tersedia"
-                                            }
-                                        </span>
-                                    </div>
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-calendar3 me-3 text-secondary" />
+                                <div>
+                                    <span class="d-block fw-bold">
+                                        {/* Tanggal jadwal */}
+                                        {doctor.schedules[0]?.date ||
+                                            "Jadwal Belum Tersedia"}
+                                    </span>
+                                    <small class="text-muted">
+                                        {/* Jam jadwal */}
+                                        {doctor.schedules[0]
+                                            ? `${doctor.schedules[0].start_time.replace(/:00$/, "")} - ${doctor.schedules[0].end_time.replace(/:00$/, "")}`
+                                            : "Jam Belum Tersedia"}
+                                    </small>
                                 </div>
-                                <a
-                                    href="signup.html"
-                                    class="text-white text-decoration-none"
-                                >
-                                    <button
-                                        class="btn btn-primary w-100 mt-auto fw-bold"
-                                    >
-                                        Buat Janji Temu
-                                    </button>
-                                </a>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-geo-alt me-3 text-secondary" />
+                                <span>
+                                    {/* Ruang dokter */}
+                                    {doctor.room
+                                        ? `Ruang ${doctor.room}`
+                                        : "Ruang Belum Tersedia"}
+                                </span>
                             </div>
                         </div>
-                    ))
-                ) : (
-                    <p class="text-muted text-center">Belum ada data dokter tersedia.</p>
-                )
-            }
-        </div>
-    </div>
+                        <a
+                            href="signup.html"
+                            class="text-white text-decoration-none"
+                        >
+                            <button class="btn btn-primary w-100 mt-auto fw-bold">
+                                Buat Janji Temu
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            ))
+        ) : (
+            <p class="text-muted text-center">
+                Belum ada data dokter tersedia.
+            </p>
+        )
+    }
+</div>

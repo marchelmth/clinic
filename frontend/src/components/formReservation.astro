@@ -1,0 +1,205 @@
+---
+import api from "../services/api";
+
+interface FormData {
+    id : number;
+    specialization : string;
+    schedules : {
+        id : number;
+        date : string;
+        start_time : string;
+        end_time : string;
+    }[];
+}
+
+const { Reservation } = Astro.props;
+
+
+let rawReservations : FormData[] = [];
+let users: any[] = [];
+try {
+    const [resDoctors, resUsers] = await Promise.all([
+        api.get("/api/doctors"),
+        api.get("/api/users"),
+    ]);
+
+    rawReservations = resDoctors.data.data || [];
+    users = resUsers.data.data || [];
+} catch (err) {
+    console.error(
+        "Gagal mengambil data form reservasi:",
+        err instanceof Error ? err.message : err,
+    );
+}
+
+const reservations = rawReservations.map((r : FormData) => ({
+    id: r.id,
+    specialization: r.specialization,
+    schedules: r.schedules.map(s => ({
+        id: s.id,
+        date: s.date,
+        start_time: s.start_time,
+        end_time: s.end_time,
+    }))
+}));
+
+const apiBaseUrl = api.defaults.baseURL;
+const selectedUser = users[0] || null;
+---
+
+<form id="reservationForm" novalidate>
+    <div class="mb-3">
+        <label class="form-label fw-medium" for="peserta">Peserta</label>
+        <input
+            disabled
+            id="peserta"
+            class="form-control bg-body-secondary"
+            value={selectedUser?.name || ""}
+            placeholder="Data peserta tidak tersedia"
+        />
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-medium" for="poli">Poli</label>
+        <select name="poli" id="poli" class="form-select bg-body-secondary">
+            <option value="">Pilih Poli</option>
+            {
+                reservations.map((r) => (
+                    <option value={r.id}>{r.specialization}</option>
+                ))
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-medium" for="hari">Hari</label>
+        <select name="hari" id="hari" class="form-select bg-body-secondary">
+            <option value="">Pilih Poli terlebih dahulu</option>
+        </select>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label fw-medium" for="keluhan">Keluhan</label>
+        <textarea
+            id="keluhan"
+            rows="3"
+            placeholder="Silakan isi keluhan..."
+            class="form-control bg-body-secondary"
+        ></textarea>
+    </div>
+
+    <div class="d-grid">
+        <button type="submit" class="btn btn-success btn-md text-white">
+            Simpan
+        </button>
+    </div>
+</form>
+
+<script is:inline define:vars={{ reservations, apiBaseUrl, selectedUser }}>
+    const poliSelect = document.getElementById("poli");
+    const hariSelect = document.getElementById("hari");
+
+    poliSelect.addEventListener("change", (e) => {
+        const selectedId = e.target.value;
+
+        hariSelect.innerHTML = '<option value="">Pilih Hari</option>';
+
+        if (!selectedId) {
+            hariSelect.disabled = true;
+            hariSelect.innerHTML =
+                '<option value="">Pilih Poli terlebih dahulu</option>';
+            return;
+        }
+
+        const selectedData = reservations.find(
+            (r) => r.id === parseInt(selectedId),
+        );
+
+        if (selectedData && selectedData.schedules) {
+            selectedData.schedules.forEach((schedule) => {
+                const option = document.createElement("option");
+                option.value = schedule.id;
+                option.textContent = `${schedule.date} (${schedule.start_time.replace(/:00$/, "")} - ${schedule.end_time.replace(/:00$/, "")})`;
+                hariSelect.appendChild(option);
+            });
+            hariSelect.disabled = false;
+        } else {
+            hariSelect.disabled = true;
+        }
+    });
+
+    document
+        .getElementById("reservationForm")
+        .addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const hari = document.getElementById("hari").value;
+            const keluhan = document.getElementById("keluhan").value.trim();
+
+            if (!hari) {
+                alert("Pilih jadwal terlebih dahulu.");
+                return;
+            }
+
+            if (!keluhan) {
+                alert("Isi keluhan terlebih dahulu.");
+                return;
+            }
+
+            const token = localStorage.getItem("auth_token");
+            const storedUser = JSON.parse(
+                localStorage.getItem("auth_user") || "null",
+            );
+
+            if (!token) {
+                alert("Silakan login terlebih dahulu.");
+                window.location.href = "/login";
+                return;
+            }
+
+            const reservationData = {
+                user_id: storedUser?.id || selectedUser?.id,
+                schedule_id: hari,
+                keluhan: keluhan,
+            };
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/reservations`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(reservationData),
+                });
+                const responseBody = await response.text();
+                const data = responseBody
+                    ? (() => {
+                          try {
+                              return JSON.parse(responseBody);
+                          } catch {
+                              return {};
+                          }
+                      })()
+                    : {};
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message ||
+                            `Request gagal dengan status ${response.status}`,
+                    );
+                }
+
+                console.log("Success:", data);
+                alert("Reservasi berhasil dibuat!");
+                document.getElementById("reservationForm").reset();
+                window.location.href = "/antrean";
+            } catch (err) {
+                console.error("Error:", err);
+                alert(
+                    err instanceof Error
+                        ? err.message
+                        : "Terjadi kesalahan saat membuat reservasi.",
+                );
+            }
+        });
+</script>

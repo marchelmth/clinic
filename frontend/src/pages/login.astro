@@ -2,8 +2,8 @@
 import "../styles/global.css";
 import Header from "../components/header.astro";
 import Layouts from "../layouts/layouts.astro";
-import Form from "../components/formReservation.astro";
-const title = "Klinik Sehat | Reservasi";
+import FormLogin from "../components/formLogin.astro";
+const title = "Klinik Sehat | Login";
 ---
 
 <Layouts {title}>
@@ -11,17 +11,17 @@ const title = "Klinik Sehat | Reservasi";
     <Header Page={title.split(" | ")[1]} cssClass="sticky-top"s />
 
     <div
-        class="container font-iosevka min-vh-100 d-flex align-items-center py-4"
+        class="container font-iosevka d-flex align-items-center py-5 min-vh-100"
     >
         <div class="row justify-content-center w-100 mb-3 mb-md-5">
-            <div class="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4 ms-3">
+            <div class="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4 ms-11">
                 <div class="card border-1 rounded-4 shadow-sm">
-                    <div class="card-body p-3 p-md-4">
+                    <div class="card-body p-2 p-md-3">
                         <h5 class="text-uppercase text-center mb-3">
-                            Buat Reservasi
+                            Login
                         </h5>
                         
-                        <Form />
+                        <FormLogin />
                     </div>
                 </div>
             </div>

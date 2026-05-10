@@ -1,19 +1,59 @@
-
 ---
-import  { Image } from "astro:assets";
-const { cssClass} = Astro.props
-const profilePicture = "https://ui-avatars.com/api/?rounded=true&name=Minda+Musuma&background=000&color=ffff&size=100";
+const { cssClass } = Astro.props;
+const fallbackName = "User";
+const fallbackAvatar = `https://ui-avatars.com/api/?rounded=true&name=${fallbackName}&background=000&color=ffff&size=100`;
 ---
 
-<a href="/signup" class="d-none d-lg-block">
-	<Image
-        src={profilePicture}
-        alt="Profile"
-        width={35}
-        height={35}
-        class={`img-fluid mx-lg-5 ${cssClass || ''}`}
-        loading="eager" 
-        fetchpriority="high"
-    />
-    <slot/>
-</a>
+<div class={`auth-profile ${cssClass || ""}`}>
+    <a
+        id="loginLink"
+        href="/login"
+        class="btn btn-success btn-sm text-white rounded-2 me-2"
+    >
+        Login
+    </a>
+
+    <a
+        id="profileLink"
+        href="/profile"
+        class="d-none"
+        aria-label="Profile"
+    >
+        <img
+            id="profilePicture"
+            src={fallbackAvatar}
+            alt="Profile"
+            width="35"
+            height="35"
+            class="img-fluid rounded-circle"
+            loading="eager"
+            fetchpriority="high"
+        />
+    </a>
+
+    <slot />
+</div>
+
+<script is:inline>
+    const loginLink = document.getElementById("loginLink");
+    const profileLink = document.getElementById("profileLink");
+    const profileImage = document.getElementById("profilePicture");
+    const token = localStorage.getItem("auth_token");
+    const authUser = JSON.parse(localStorage.getItem("auth_user") || "null");
+    const storedProfileName = localStorage.getItem("profile_name");
+    const fullName = authUser?.profile_name || storedProfileName || authUser?.name || "User";
+
+    if (token) {
+        loginLink?.classList.add("d-none");
+        profileLink?.classList.remove("d-none");
+
+        if (profileImage) {
+            const avatarName = encodeURIComponent(fullName);
+            profileImage.src = `https://ui-avatars.com/api/?rounded=true&name=${avatarName}&background=000&color=ffff&size=100`;
+            profileImage.alt = `${fullName} profile`;
+        }
+    } else {
+        loginLink?.classList.remove("d-none");
+        profileLink?.classList.add("d-none");
+    }
+</script>
