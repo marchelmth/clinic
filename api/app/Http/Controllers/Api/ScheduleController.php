@@ -21,12 +21,17 @@ class ScheduleController extends Controller
 
     public function store(Request $request)
     {   
-        Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'doctor_id' => 'required|exists:doctors,id',
-            'day' => 'required|string',
+            'date' => 'required|string',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
-        ])->validate();
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error($validator->errors()->first(), 422);
+        }
+
         $schedule = Schedule::create($request->all());
         return ApiResponse::success("Schedule created successfully", $schedule, 201);
     }
@@ -38,14 +43,21 @@ class ScheduleController extends Controller
 
     public function update(Request $request, Schedule $schedule)
     {
-        Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|string',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
         ])->validate();
 
-        if (!validator()) {
+        $validator = Validator::make($request->all(), [
+            'doctor_id' => 'required|exists:doctors,id',
+            'date' => 'required|string',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+        ]);
+
+        if ($validator->fails()) {
             return ApiResponse::error("Validation failed", 422);
         }
 

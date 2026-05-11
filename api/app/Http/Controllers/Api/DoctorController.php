@@ -26,7 +26,7 @@ class DoctorController extends Controller
             'specialization' => 'nullable|string|max:255',
             'phone' => 'required|integer|min:9|unique:doctors,phone',
             'email' => 'required|email|unique:doctors,email',
-            'room' => 'nullable|integer|digits_between:1,3'
+            'room' => 'nullable|string|digits_between:1,3'
         ]);
 
         if ($validator->fails()) {
@@ -64,7 +64,7 @@ class DoctorController extends Controller
             'phone' => 'integer|min:9|unique:doctors,phone',
             'email' => 'email|unique:doctors,email',
             'schedule_id' => 'integer|exists:schedules,id',
-            'room' => 'nullable|integer|digits_between:1,3'
+            'room' => 'nullable|string|digits_between:1,3'
         ]);
 
         if ($validator->fails()) {

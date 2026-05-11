@@ -10,8 +10,7 @@ class Schedule extends Model
         'doctor_id',
         'date',
         'start_time',
-        'end_time',
-        'quota'
+        'end_time'
     ];
 
     protected $hidden = [

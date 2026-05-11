@@ -108,7 +108,7 @@ http://localhost:3000/api/login
 phpMyAdmin bisa diakses di:
 
 ```text
-http://localhost:8080
+http://localhost:8000
 ```
 
 Konfigurasi login phpMyAdmin:

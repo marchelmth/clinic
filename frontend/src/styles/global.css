@@ -8,3 +8,8 @@
 .hero-subtitle {
 	font-size: clamp(1rem, 1.5vw, 1.25rem);
 }
+
+.queue-info {
+    background-color: #f0f7ff;
+    border: 1px solid #d0e7ff;
+}
