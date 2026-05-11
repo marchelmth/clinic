@@ -1,7 +1,2 @@
 bun.lock
-package.json
-<<<<<<< HEAD
 node_modules
-=======
-node_modules
->>>>>>> 7e6f533268f94a00f73f89b3314baafba906791c
