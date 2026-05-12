@@ -1,9 +1,56 @@
+import { useEffect, useState } from "react";
 import Counting from "../components/Counting.jsx";
 import Header from "../components/Header.jsx";
 import Layout from "../components/Layout.jsx";
+import api from "../services/api.js";
 
 export default function Home() {
   const title = "Klinik Sehat | Beranda";
+  const [counts, setCounts] = useState({ doctors: 0, today: 0, active: 0, monthly: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+        const doctorsReq = api.get("/api/doctors");
+        const statsReq = api.get("/api/admin/stats");
+
+        const [doctorsRes, statsRes] = await Promise.all([doctorsReq, statsReq]);
+
+        const doctorsCount = doctorsRes?.data?.data?.length ?? 0;
+        const stats = statsRes?.data ?? {};
+
+        if (mounted) {
+          setCounts({
+            doctors: doctorsCount,
+            today: stats.today ?? 0,
+            active: stats.approved || stats.pending || 0,
+            monthly: stats.total ?? 0,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard counts:", err);
+        // fallback: try to at least fetch doctors
+        try {
+          const docs = await api.get("/api/doctors");
+          if (mounted) setCounts((p) => ({ ...p, doctors: docs?.data?.data?.length ?? 0 }));
+        } catch (e) {
+          if (mounted) setCounts((p) => ({ ...p }));
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchAll();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <Layout title={title}>
@@ -26,7 +73,7 @@ export default function Home() {
             <div className="d-flex align-items-center justify-content-between">
               <div>
                 <p className="text-muted small mb-1">Total Dokter</p>
-                <Counting />
+                <Counting count={counts.doctors} loading={loading} />
               </div>
               <div className="bg-primary p-2 rounded-2 text-white">
                 <i className="bi bi-person fs-4" />
@@ -34,42 +81,81 @@ export default function Home() {
             </div>
           </div>
         </div>
-        {[
-          ["Antrean Hari Ini", "3", "bg-success", "bi-calendar"],
-          ["Antrean Aktif", "3", "bg-warning", "bi-clock"],
-          ["Pasien Bulan Ini", "3", "bg-secondary", "bi-graph-up-arrow"],
-        ].map(([label, value, color, icon]) => (
-          <div className="col" key={label}>
-            <div className="card h-100 border-0 shadow-sm p-3 custom-card">
-              <div className="d-flex align-items-center justify-content-between">
-                <div>
-                  <p className="text-muted small mb-1">{label}</p>
-                  <p className="h2 fw-bold text-dark mb-0">{value}</p>
-                </div>
-                <div className={`${color} p-2 rounded-2 text-white`}>
-                  <i className={`bi ${icon} fs-4`} />
-                </div>
+
+        <div className="col">
+          <div className="card h-100 border-0 shadow-sm p-3 custom-card">
+            <div className="d-flex align-items-center justify-content-between">
+              <div>
+                <p className="text-muted small mb-1">Antrean Hari Ini</p>
+                <Counting count={counts.today} loading={loading} />
+              </div>
+              <div className="bg-secondary p-2 rounded-2 text-white">
+                <i className="bi bi-calendar fs-4"></i>
               </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="col">
+          <div className="card h-100 border-0 shadow-sm p-3 custom-card">
+            <div className="d-flex align-items-center justify-content-between">
+              <div>
+                <p className="text-muted small mb-1">Antrean Aktif</p>
+                <Counting count={counts.active} loading={loading} />
+              </div>
+              <div className="bg-warning p-2 rounded-2 text-white">
+                <i className="bi bi-clock fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col">
+          <div className="card h-100 border-0 shadow-sm p-3 custom-card">
+            <div className="d-flex align-items-center justify-content-between">
+              <div>
+                <p className="text-muted small mb-1">Pasien Bulan ini</p>
+                <Counting count={counts.monthly} loading={loading} />
+              </div>
+              <div className="bg-success p-2 rounded-2 text-white">
+                <i className="bi bi-graph-up-arrow fs-4" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 px-3 px-sm-4 px-lg-5 mt-5">
+      <div
+        className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 px-3 px-sm-4 px-lg-5 mt-5"
+      >
         <div className="col">
           <div className="card h-55 border-0 shadow-sm p-1 custom-card">
             <div className="card-body text-center font-iosevka">
               <h5 className="card-title">JADWAL PRAKTEK KLINIK</h5>
               <hr />
-              {["Senin", "Selasa", "Rabu", "Kamis", "Sabtu"].map((day) => (
-                <p className="card-text" key={day}>
-                  <small className="text-muted">{day} - </small>
-                  <strong>09:00-18:00</strong>
-                </p>
-              ))}
               <p className="card-text">
-                <small className="text-muted">Jumat - </small>
+                <small className="text-muted">Senin -</small>
+                <strong>09:00-18:00</strong>
+              </p>
+              <p className="card-text">
+                <small className="text-muted">Selasa -</small>
+                <strong>09:00-18:00</strong>
+              </p>
+              <p className="card-text">
+                <small className="text-muted">Rabu -</small>
+                <strong>09:00-18:00</strong>
+              </p>
+              <p className="card-text">
+                <small className="text-muted">Kamis -</small>
+                <strong>09:00-18:00</strong>
+              </p>
+              <p className="card-text">
+                <small className="text-muted">Jumat -</small>
                 <strong>09:00-16:00</strong>
+              </p>
+              <p className="card-text">
+                <small className="text-muted">Sabtu -</small>
+                <strong>09:00-18:00</strong>
               </p>
             </div>
           </div>
@@ -107,6 +193,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </Layout>
+    </Layout >
   );
 }

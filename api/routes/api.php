@@ -12,6 +12,7 @@ Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('schedules', ScheduleController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/admin/stats', [ReservationController::class, 'stats']);        
 
 
 
@@ -28,6 +29,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject']);
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
     Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
-    Route::get('/admin/stats', [ReservationController::class, 'stats']);        
-
 });
