@@ -31,10 +31,9 @@ class AuthController extends Controller
             'role' => 'user'
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user->sendEmailVerificationNotification();
 
-        return ApiResponse::success('Register Successfully', [
-            'token' => $token,
+        return ApiResponse::success('Register Successfully. Please verify your email before login.', [
             'user' => $user->only('id', 'name', 'email', 'role')
         ]);
     }

@@ -11,8 +11,14 @@ Route::apiResource('users', UserController::class);
 Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('schedules', ScheduleController::class);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/email/verification-notification', [UserController::class, 'resendVerificationEmail']);
+Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])
+    ->middleware('signed')
+    ->name('verification.verify');
+Route::get('/email/verify-status', [UserController::class, 'verifyStatusVerificationEmail']);
 Route::get('/admin/stats', [ReservationController::class, 'stats']);        
+
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 
 
