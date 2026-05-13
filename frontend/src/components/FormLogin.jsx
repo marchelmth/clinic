@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
-import { s } from "framer-motion/client";
+import { a } from "framer-motion/client";
 
 function getProfileName(user) {
   const nameParts = (user?.name || "").trim().split(/\s+/);
@@ -20,6 +20,7 @@ export default function FormLogin() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [verifyEmailLink, setVerifyEmailLink] = useState("");
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -54,7 +55,22 @@ export default function FormLogin() {
       const data = responseBody ? JSON.parse(responseBody) : {};
 
       if (!response.ok) {
-        throw new Error(data.message || `Request gagal dengan status ${response.status}`);
+        let message = data.message || `Request gagal dengan status ${response.status}`;
+
+        if (response.status === 403) {
+          message = (
+            <>
+              Email Belum diverifikasi. {" "}
+              <a href="/verify-email" className="text-white text-decoration-underline">
+                Kirim ulang email verifikasi.
+              </a>
+            </>
+          );
+        }
+
+        throw {
+          message,
+        };
       }
 
       const token = data.data?.token;
@@ -143,6 +159,7 @@ export default function FormLogin() {
       <p className="text-center mt-3">
         Belum punya akun? <a href="/signup">Daftar di sini</a>
       </p>
+
     </>
   );
 }

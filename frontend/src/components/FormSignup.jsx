@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
 
@@ -69,14 +69,16 @@ export default function FormSignup() {
         throw new Error(data.message || `Request gagal dengan status ${response.status}`);
       }
 
+      localStorage.setItem("pending_verification_email", email);
+
       setName("");
       setEmail("");
       setPassword("");
       setRepeatPassword("");
-      showToast("success", "Sukses", "Akun berhasil dibuat. Silakan login.");
+      showToast("success", "Sukses", "Akun berhasil dibuat. Cek email untuk verifikasi.");
 
       setTimeout(() => {
-        window.location.href = "/login";
+        window.location.href = "/wait-verify-email";
       }, 900);
     } catch (error) {
       console.error("Error during registration:", error);
@@ -133,7 +135,7 @@ export default function FormSignup() {
           </span>
         </div>
         <label className="form-label" htmlFor="repeatPassword">
-          Repeat your password
+          Ulangi password Anda
         </label>
         <div className="form-outline mb-3 input-group">
           <input
@@ -149,10 +151,10 @@ export default function FormSignup() {
           </span>
         </div>
 
-        <div className="form-check d-flex justify-content-center mb-3">
+        <div className="form-check d-flex justify-content-center mb-2">
           <input className="form-check-input me-2 bg-dark" type="checkbox" id="checkBox" required />
           <label className="form-check-label" htmlFor="checkBox">
-            I agree all statements in{" "}
+            <small> Saya setuju dengan semua pernyataan dalam{" "} </small>
             <a href="#!" className="text-body">
               <u>Terms of service</u>
             </a>
@@ -165,11 +167,14 @@ export default function FormSignup() {
           </button>
         </div>
 
-        <p className="text-center text-muted mt-3 mb-0">
-          Have already an account?{" "}
+        <p className="text-center text-muted mt-2 mb-0">
+          Sudah punya akun? {" "}
           <a href="/login" className="fw-bold text-body">
-            <u className="text-decoration-none">Login here</u>
+            <u className="text-decoration-none">Silakan Login</u>
           </a>
+        </p>
+        <p className="text-center text-muted mt-2 mb-0">
+          Belum menerima email? <a href="/verify-email">Kirim ulang verifikasi</a>
         </p>
       </form >
     </>
