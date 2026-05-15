@@ -58,37 +58,33 @@ export default function FormSignup() {
       const data = responseBody ? JSON.parse(responseBody) : {};
 
       console.log("Response from registration:", data);
-
       if (!response.ok) {
-
         if (typeof data === "object" && data !== null) {
-          const errorMessage = Object.values(data.message).join(" ");
+          let errorMessage = "";
+          if (typeof data.message === "object" && data.message !== null) {
+            errorMessage = Object.values(data.message).flat().join(" ");
+          } else {
+            errorMessage = data.message;
+          }
           throw new Error(errorMessage);
         }
-
         throw new Error(data.message || `Request gagal dengan status ${response.status}`);
       }
-
       localStorage.setItem("pending_verification_email", email);
-
       setName("");
       setEmail("");
       setPassword("");
       setRepeatPassword("");
       showToast("success", "Sukses", "Akun berhasil dibuat. Cek email untuk verifikasi.");
-
       setTimeout(() => {
         window.location.href = "/wait-verify-email";
       }, 900);
     } catch (error) {
-      console.error("Error during registration:", error);
       showToast("error", "Error", error.message || "Terjadi kesalahan saat membuat akun.");
     } finally {
       setIsSubmitting(false);
     }
   }
-
-
   return (
     <>
       <form onSubmit={handleSubmit}>
@@ -150,7 +146,6 @@ export default function FormSignup() {
             <i className={showResetPassword ? "bi bi-eye-slash" : "bi bi-eye"} onClick={toggleShowResetPassword} style={{ cursor: "pointer" }}></i>
           </span>
         </div>
-
         <div className="form-check d-flex justify-content-center mb-2">
           <input className="form-check-input me-2 bg-dark" type="checkbox" id="checkBox" required />
           <label className="form-check-label" htmlFor="checkBox">
@@ -160,13 +155,11 @@ export default function FormSignup() {
             </a>
           </label>
         </div>
-
         <div className="d-flex justify-content-center">
           <button type="submit" className="btn btn-success btn-block btn-md text-white">
             Register
           </button>
         </div>
-
         <p className="text-center text-muted mt-2 mb-0">
           Sudah punya akun? {" "}
           <a href="/login" className="fw-bold text-body">

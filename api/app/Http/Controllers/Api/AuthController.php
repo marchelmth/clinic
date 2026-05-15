@@ -8,6 +8,9 @@ use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
+use function Laravel\Prompts\error;
 
 class AuthController extends Controller
 {
@@ -24,18 +27,38 @@ class AuthController extends Controller
             return ApiResponse::error($validator->errors(), 400);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user'
-        ]);
+        DB::beginTransaction();
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'user'
+            ]);
 
-        return ApiResponse::success('Register Successfully. Please verify your email before login.', [
-            'user' => $user->only('id', 'name', 'email', 'role')
-        ]);
+            
+            $user->sendEmailVerificationNotification();
+
+            DB::commit();
+
+            return ApiResponse::success('Registration successful. Please check your email to verify your account.', [
+                'user' => $user->only('id', 'name', 'email', 'role')
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $errorMessage = 'Terjadi kesalahan pada sistem, silakan coba beberapa saat lagi.';
+
+            if (str_contains($e->getMessage(), 'mail') || str_contains($e->getMessage(), 'Connection')) {
+                $errorMessage = 'Gagal mengirimkan email verifikasi. Silakan periksa kembali email Anda atau coba lagi nanti.';
+            } elseif (str_contains($e->getMessage(), 'Database') || $e instanceof \Illuminate\Database\QueryException) {
+                $errorMessage = 'Gagal menyimpan data pendaftaran ke server.';
+            }
+
+            return ApiResponse::error(mb_convert_encoding($errorMessage, 'UTF-8'), 500);
+        }
     }
 
     // LOGIN
