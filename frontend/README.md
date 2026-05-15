@@ -27,3 +27,5 @@ Frontend Klinik Sehat menggunakan React dan Vite.
 | `npm run dev` | Start local dev server |
 | `npm run build` | Build production files to `dist/` |
 | `npm run preview` | Preview the production build |
+
+## Testing from Cachyos GNOME
