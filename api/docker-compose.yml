@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile
     container_name: clinic_app
     working_dir: /var/www
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    command: sh -lc "chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && exec php-fpm -F"
     volumes:
       - .:/var/www
     depends_on:

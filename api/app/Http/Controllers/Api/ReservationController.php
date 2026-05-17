@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ReservationController extends Controller
 {
-    // GET semua reservation (punya user login + filter)
     public function index(Request $request)
     {
         $query = Reservation::with(['user', 'schedule.doctor'])
@@ -58,14 +57,14 @@ class ReservationController extends Controller
         $schedule = Schedule::findOrFail($request->schedule_id);
 
         // cek kuota
-        if ($schedule->reservations()
-            ->whereIn('status', ['pending', 'approved'])
-            ->count() >= $schedule->quota) {
+        // if ($schedule->reservations()
+        //     ->whereIn('status', ['pending', 'approved'])
+        //     ->count() >= $schedule->quota) {
 
-            return response()->json([
-                'message' => 'Kuota penuh'
-            ], 400);
-        }
+        //     return response()->json([
+        //         'message' => 'Kuota penuh'
+        //     ], 400);
+        // }
 
         // cek double booking
         $alreadyBooked = Reservation::where('user_id', $request->user()->id)
@@ -105,14 +104,14 @@ class ReservationController extends Controller
 
         $schedule = $reservation->schedule;
 
-        if ($schedule->reservations()
-            ->where('status', 'approved')
-            ->count() >= $schedule->quota) {
+        // if ($schedule->reservations()
+        //     ->where('status', 'approved')
+        //     ->count() >= $schedule->quota) {
 
-            return response()->json([
-                'message' => 'Kuota penuh'
-            ], 400);
-        }
+        //     return response()->json([
+        //         'message' => 'Kuota penuh'
+        //     ], 400);
+        // }
 
         $reservation->update(['status' => 'approved']);
 

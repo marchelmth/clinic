@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Helpers\ApiResponse;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -40,7 +41,17 @@ class UserController extends Controller
             return ApiResponse::error("Failed to create user", 500);
         }
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Exception $e) {
+            Log::error('Failed sending verification email after user creation', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ApiResponse::success('User created successfully, but verification email failed to send', $user, 201);
+        }
 
         return ApiResponse::success("User created successfully", $user, 201);
     }
@@ -123,7 +134,17 @@ class UserController extends Controller
             return ApiResponse::success('Email already verified');
         }
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Exception $e) {
+            Log::error('Failed resending verification email', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ApiResponse::error('Gagal mengirim ulang email verifikasi. Periksa konfigurasi email server.', 500);
+        }
 
         return ApiResponse::success('Verification email sent');
     }

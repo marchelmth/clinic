@@ -64,16 +64,14 @@ export default function WaitVerifyEmail() {
     return (
         <Layout title="Klinik Sehat | Verifikasi Email (Waiting for Verification)">
             <Header page="Verify Email (Waiting for Verification)" className="sticky-top" />
-            <div className="container font-iosevka d-flex align-items-center py-5 min-vh-100">
-                <div className="row justify-content-center w-100">
+            <div className="container font-iosevka d-flex align-items-center min-vh-100">
+                <div className="row justify-content-center w-75 mx-auto">
                     <div className="col-11 col-sm-8 col-md-6 col-lg-5">
-                        <div className="card border-1 rounded-4 shadow-sm">
+                        <div className="card border-2 rounded-4 shadow-sm">
                             <div>
                                 <div className="card-body p-4 text-center">
                                     <h3 className="mb-3">Tunggu Verifikasi Email</h3>
                                     <p className="text-muted mb-4">{message}</p>
-                                    <p className="text-muted mb-4">Jika Anda belum menerima email verifikasi, silakan periksa folder spam atau junk mail Anda.</p>
-                                    <p className="text-muted mb-4">Setelah memverifikasi email, silakan kembali ke halaman login untuk masuk ke akun Anda.</p>
                                     {!pendingEmail && (
                                         <a href="/verify-email" className="btn btn-primary text-white">
                                             Kirim Ulang Verifikasi

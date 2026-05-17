@@ -9,8 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
-use function Laravel\Prompts\error;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -37,14 +36,25 @@ class AuthController extends Controller
                 'role' => 'user'
             ]);
 
-            
-            $user->sendEmailVerificationNotification();
-
             DB::commit();
 
-            return ApiResponse::success('Registration successful. Please check your email to verify your account.', [
-                'user' => $user->only('id', 'name', 'email', 'role')
-            ]);
+            try {
+                $user->sendEmailVerificationNotification();
+
+                return ApiResponse::success('Registrasi berhasil, silakan cek email Anda untuk memverifikasi akun', [
+                    'user' => $user->only('id', 'name', 'email', 'role')
+                ]);
+            } catch (\Exception $mailException) {
+                Log::error('Failed sending verification email after registration', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $mailException->getMessage(),
+                ]);
+
+                return ApiResponse::success('Registrasi berhasil, tetapi email verifikasi gagal dikirim. Silakan coba kirim ulang dari menu verifikasi email.', [
+                    'user' => $user->only('id', 'name', 'email', 'role')
+                ]);
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -68,24 +78,26 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-
         if ($validator->fails()) {
             return ApiResponse::error( $validator->errors(), 400);
         }
-
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return ApiResponse::error('Email or password is incorrect', 401);
+        if (!$user) { 
+            return ApiResponse::error("Akun belum terdaftar, Buat akun terlebih dahulu", 404);
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return ApiResponse::error('Email atau Passsword salah', 401);
         }
 
         if ($user->email_verified_at === null) {
-            return ApiResponse::error('Email Must Be Verified', 403);
+            return ApiResponse::error('Email harus diverifikasi terlebih dahulu', 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return ApiResponse::success('Login Successfully', [
+        return ApiResponse::success('Login Berhasil', [
             'token' => $token,
             'user' => $user->only('id', 'name', 'email', 'role')
         ]);
@@ -96,6 +108,6 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
 
-        return ApiResponse::success('Successfully logged out');
+        return ApiResponse::success('Logout Berhasil');
     }
 }

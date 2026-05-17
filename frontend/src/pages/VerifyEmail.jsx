@@ -108,7 +108,7 @@ export default function VerifyEmail() {
 
     } catch (error) {
       setStatus("error");
-      console.log(error.message)
+      console.log(error)
       setMessage(error.message || "Gagal mengirim ulang link verifikasi.");
       showToast("error", "Error", error.message || "Gagal mengirim ulang link verifikasi.");
     } finally {
@@ -116,23 +116,14 @@ export default function VerifyEmail() {
     }
   };
 
-  const badgeClass = statusVerify === "success" ? "text-bg-success" : statusVerify === "error" ? "text-bg-danger" : "text-bg-secondary";
-  const buttonSwitch = status === "success" ? (
-    <a className="btn btn-success text-white" href="/login">
-      Login
-    </a>
-  ) : (
-    <button type="submit" className="btn btn-primary w-100" disabled={isResending}>
-      {isResending ? "Mengirim..." : "Kirim Link Verifikasi"}
-    </button>
-  );
+  const badgeClass = status === "success" ? "text-bg-success" : status === "error" ? "text-bg-danger" : "text-bg-secondary";
 
   return (
     <Layout title="Klinik Sehat | Verifikasi Email">
       <Header page="Verify Email" className="sticky-top" />
       <div className="container font-iosevka d-flex align-items-center py-5 min-vh-100">
         <div className="row justify-content-center w-100">
-          <div className="col-11 col-sm-8 col-md-6 col-lg-5">
+          <div className="col-11 col-sm-7 col-md-6 col-lg-5">
             <div className="card border-1 rounded-4 shadow-sm">
               <div className="card-body p-4">
                 <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
@@ -140,7 +131,7 @@ export default function VerifyEmail() {
                   <span className={`badge ${badgeClass}`}>{statusVerify === "loading" ? "Loading" : statusVerify === "success" ? "Sukses" : statusVerify === "error" ? "Gagal" : "Kirim Ulang"}</span>
                 </div>
 
-                {/* <p className="text-muted mb-4">{message}</p> */}
+                <p className="text-muted mb-4">{message}</p>
 
                 {!verificationPath && (
                   <form onSubmit={handleResend}>
@@ -156,8 +147,16 @@ export default function VerifyEmail() {
                       onChange={(event) => setEmail(event.target.value)}
                       required
                     />
-                    {buttonSwitch}
+                    <button type="submit" className="btn btn-primary w-100" disabled={isResending}>
+                      {isResending ? "Mengirim..." : "Kirim Link Verifikasi"}
+                    </button>
                   </form>
+                )}
+
+                {verificationPath && (
+                  <button className="btn btn-primary w-100" onClick={() => window.location.href = "/login"}>
+                    Kembali ke Halaman Login
+                  </button>
                 )}
               </div>
             </div>

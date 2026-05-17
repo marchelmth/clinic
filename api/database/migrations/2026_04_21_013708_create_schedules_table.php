@@ -17,7 +17,6 @@ return new class extends Migration
             $table->text('date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->integer('quota')->nullable();
             $table->timestamps();
         });
 

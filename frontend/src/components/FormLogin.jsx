@@ -102,7 +102,6 @@ export default function FormLogin() {
         window.location.href = "/";
       }, 900);
     } catch (error) {
-      console.error(error);
       showToast("error", "Error", error.message || "Terjadi kesalahan saat login.");
     } finally {
       setIsSubmitting(false);
