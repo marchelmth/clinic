@@ -71,6 +71,61 @@ class AuthController extends Controller
         }
     }
 
+    // UPDATE EMAIL
+    public function updateEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:users',
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error($validator->errors(), 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = User::where('email', $request->email)->first();
+
+            $user->email = $request->email;
+
+            $user->save();
+
+            DB::commit();
+
+            try {
+                $user->sendEmailVerificationNotification();
+
+                return ApiResponse::success('Update email berhasil, silakan cek email Anda untuk memverifikasi akun', [
+                    'user' => $user->only('id', 'name', 'email', 'role')
+                ]);
+            } catch (\Exception $mailException) {
+                Log::error('Failed sending verification email after update email', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $mailException->getMessage(),
+                ]);
+
+                return ApiResponse::success('Update email berhasil, tetapi email verifikasi gagal dikirim. Silakan coba kirim ulang dari menu verifikasi email.', [
+                    'user' => $user->only('email')
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $errorMessage = 'Terjadi kesalahan pada sistem, silakan coba beberapa saat lagi.';
+
+            if (str_contains($e->getMessage(), 'mail') || str_contains($e->getMessage(), 'Connection')) {
+                $errorMessage = 'Gagal mengirimkan email verifikasi. Silakan periksa kembali email Anda atau coba lagi nanti.';
+            } elseif (str_contains($e->getMessage(), 'Database') || $e instanceof \Illuminate\Database\QueryException) {
+                $errorMessage = 'Gagal menyimpan data pendaftaran ke server.';
+            }
+
+            return ApiResponse::error(mb_convert_encoding($errorMessage, 'UTF-8'), 500);
+        }
+    }
+
     // LOGIN
     public function login(Request $request)
     {

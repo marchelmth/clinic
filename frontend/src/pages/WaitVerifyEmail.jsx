@@ -8,13 +8,16 @@ export default function WaitVerifyEmail() {
         const params = new URLSearchParams(window.location.search);
         return params.get("email") || localStorage.getItem("pending_verification_email") || "";
     }, []);
+    const [currentEmail, setCurrentEmail] = useState(pendingEmail);
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [newEmail, setNewEmail] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState(
-        pendingEmail
-            ? `Kami telah mengirimkan email verifikasi ke ${pendingEmail}.`
+        currentEmail
+            ? `Kami telah mengirimkan email verifikasi ke ${currentEmail}.`
             : "Email verifikasi belum ditemukan. Silakan kembali daftar atau kirim ulang verifikasi.",
     );
-
     useEffect(() => {
         if (!pendingEmail) {
             return;
@@ -52,14 +55,48 @@ export default function WaitVerifyEmail() {
         checkEmailVerification();
         const intervalId = window.setInterval(checkEmailVerification, 5000);
 
-        return () => window.clearInterval(intervalId);
-
         if (isConfirmed) {
             setTimeout(() => {
                 window.location.href = "/login";
             }, 2000);
         }
-    }, [pendingEmail]);
+        return () => window.clearInterval(intervalId);
+    }, [currentEmail, isConfirmed]);
+
+    const handleChangeEmail = async (e) => {
+        e.preventDefault();
+        if (!newEmail || newEmail === currentEmail) return;
+
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${api.defaults.baseURL}/api/update-email`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({
+                    old_email: currentEmail,
+                    new_email: newEmail
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Gagal mengubah email");
+            }
+
+            localStorage.setItem("pending_verification_email", newEmail);
+            setCurrentEmail(newEmail);
+            setMessage(`Email berhasil diperbarui! Kami telah mengirimkan email verifikasi baru ke ${newEmail}.`);
+            setIsEditing(false);
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <Layout title="Klinik Sehat | Verifikasi Email (Waiting for Verification)">
@@ -70,17 +107,52 @@ export default function WaitVerifyEmail() {
                         <div className="card border-2 rounded-4 shadow-sm">
                             <div>
                                 <div className="card-body p-4 text-center">
-                                    <h3 className="mb-3">Tunggu Verifikasi Email</h3>
-                                    <p className="text-muted mb-4">{message}</p>
-                                    {!pendingEmail && (
-                                        <a href="/verify-email" className="btn btn-primary text-white">
-                                            Kirim Ulang Verifikasi
-                                        </a>
+                                    {!isConfirmed && !isEditing && (
+                                        <>
+                                            <h3 className="mb-3">Tunggu Verifikasi Email</h3>
+                                            <p className="text-muted mb-4">{message}</p>
+                                            <hr className="border border-dark" />
+                                            <p className="text-dark">Salah mengisi email?</p>
+                                            <button
+                                                onClick={() => { setIsEditing(true); setNewEmail(currentEmail); }}
+                                                className="btn btn-success w-100 text-white mb-2 border border-dark rounded-4"
+                                            >
+                                                Ubah Alamat Email
+                                            </button>
+                                            <a href="/signup" className="btn btn-outline-secondary w-100 border border-dark rounded-4 text-dark">Kembali Daftar Baru</a>
+                                        </>
                                     )}
+                                    {!isConfirmed && isEditing && (
+                                        <form onSubmit={handleChangeEmail}>
+                                            <div className="mb-3 text-start">
+                                                <label className="form-label text-dark">Masukkan Email yang Benar:</label>
+                                                <input
+                                                    type="email"
+                                                    className="form-control"
+                                                    value={newEmail}
+                                                    onChange={(e) => setNewEmail(e.target.value)}
+                                                    required
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+                                            <button type="submit" className="btn btn-success w-100 mb-2" disabled={isLoading}>
+                                                {isLoading ? "Menyimpan..." : "Simpan & Kirim Ulang"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsEditing(false)}
+                                                className="btn btn-light w-100"
+                                                disabled={isLoading}
+                                            >
+                                                Batal
+                                            </button>
+                                        </form>
+                                    )}
+
                                     {isConfirmed && (
                                         <div>
-                                            <p className="text-success">Email Anda telah diverifikasi!</p>
-                                            <p className="text-white">Anda akan diarahkan ke halaman login!</p>
+                                            <h4 className="text-success font-weight-bold">Email Anda telah diverifikasi!</h4>
+                                            <h6 className="text-muted">Anda akan diarahkan ke halaman login...</h6>
                                         </div>
                                     )}
                                 </div>
