@@ -33,7 +33,6 @@ export default function Home() {
         }
       } catch (err) {
         console.error("Error fetching dashboard counts:", err);
-        // fallback: try to at least fetch doctors
         try {
           const docs = await api.get("/api/doctors");
           if (mounted) setCounts((p) => ({ ...p, doctors: docs?.data?.data?.length ?? 0 }));

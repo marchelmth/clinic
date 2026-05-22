@@ -104,7 +104,7 @@ class UserController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
-            return ApiResponse::success('Email already verified', [
+            return ApiResponse::success('Email Berhasil diverifikasi', [
                 'user' => $user->only('id', 'name', 'email', 'role')
             ]);
         }

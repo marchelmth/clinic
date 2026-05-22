@@ -8,7 +8,13 @@ function formatTime(value) {
 
 export default function FormReservation() {
   const [reservations, setReservations] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("auth_user") || "null");
+    } catch (e) {
+      return null;
+    }
+  });
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
   const [complaint, setComplaint] = useState("");
@@ -18,12 +24,11 @@ export default function FormReservation() {
   useEffect(() => {
     let mounted = true;
 
-    Promise.all([api.get("/api/doctors"), api.get("/api/users")])
-      .then(([resDoctors, resUsers]) => {
+    api.get("/api/doctors")
+      .then((resDoctors) => {
         if (!mounted) return;
 
         const rawReservations = resDoctors.data?.data || [];
-        const users = resUsers.data?.data || [];
 
         setReservations(
           rawReservations.map((reservation) => ({
@@ -37,7 +42,6 @@ export default function FormReservation() {
             })),
           })),
         );
-        setSelectedUser(users[0] || null);
       })
       .catch((error) => {
         console.error("Gagal mengambil data form reservasi:", error);
