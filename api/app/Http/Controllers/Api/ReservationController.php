@@ -102,7 +102,7 @@ class ReservationController extends Controller
             ], 400);
         }
 
-        $schedule = $reservation->schedule;
+        // $schedule = $reservation->schedule;
 
         // if ($schedule->reservations()
         //     ->where('status', 'approved')
