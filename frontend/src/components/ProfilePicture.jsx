@@ -1,19 +1,27 @@
 import { useEffect, useState } from "react";
+import api from "../services/api";
 
-function getProfileName() {
-  const authUser = JSON.parse(localStorage.getItem("auth_user") || "null");
-  const storedProfileName = localStorage.getItem("profile_name");
-
-  return authUser?.profile_name || storedProfileName || authUser?.name || "User";
-}
-
-export default function ProfilePicture({ className = "" }) {
+export default function ProfilePicture({ className = "", isProfile = false }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profileName, setProfileName] = useState("User");
+  const [isProfilePage, setIsProfilePage] = useState(isProfile);
+  const token = localStorage.getItem("auth_token");
 
   useEffect(() => {
-    setIsLoggedIn(Boolean(localStorage.getItem("auth_token")));
-    setProfileName(getProfileName());
+    api.get("/api/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        setProfileName(res.data.data.name);
+        setIsLoggedIn(true)
+      })
+      .catch((error) => {
+        console.error("Error fetching profile:", error);
+        setIsLoggedIn(false);
+      })
+    setIsProfilePage(isProfile);
   }, []);
 
   const avatarUrl = `https://ui-avatars.com/api/?rounded=true&name=${encodeURIComponent(
@@ -28,7 +36,19 @@ export default function ProfilePicture({ className = "" }) {
         </a>
       )}
 
-      {isLoggedIn && (
+      {isLoggedIn && isProfilePage && (
+        <a aria-label="Profile">
+          <img
+            src={avatarUrl}
+            alt={`${profileName} profile`}
+            width="35"
+            height="35"
+            className="img-fluid rounded-circle"
+          />
+        </a>
+      )}
+
+      {isLoggedIn && !isProfilePage && (
         <a href="/profile" aria-label="Profile">
           <img
             src={avatarUrl}

@@ -1,19 +1,13 @@
 import Layout from "../components/Layout.jsx";
+import Header from "../components/Header.jsx";
+import ProfileLayout from "../components/ProfileLayout.jsx";
 
 export default function Profile() {
-  const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_user");
-    localStorage.removeItem("profile_name");
-    window.location.href = "/";
-  };
-
   return (
     <Layout title="Klinik Sehat | Profile">
-      <main className="container py-4 font-iosevka">
-        <button type="button" className="btn btn-secondary" onClick={handleLogout}>
-          Logout
-        </button>
+      <Header page="Profile" className="sticky-top shadow-sm" />
+      <main className="container py-5 font-iosevka">
+        <ProfileLayout />
       </main>
     </Layout>
   );
