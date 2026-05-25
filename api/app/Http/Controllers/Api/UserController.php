@@ -9,6 +9,8 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -19,6 +21,15 @@ class UserController extends Controller
             return ApiResponse::error("No users found", 404);
         }
         return ApiResponse::success("Users retrieved successfully", $users, 200);
+    }
+
+    public function profile(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponse::error("User tidak terautentikasi", 401);
+        }
+        return ApiResponse::success("Data User", $user, 200);
     }
 
     public function store(Request $request)
@@ -68,9 +79,11 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:255',
-            'email' => 'email|unique:users,email',
-            'role' => 'in:admin,user',
-            'password' => 'string|min:8'
+            'email' => [
+                'email',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'password' => 'nullable|string|min:8'
         ]);
 
         if ($validator->fails()) {
@@ -78,7 +91,28 @@ class UserController extends Controller
         }
 
         $payload = $validator->validated();
+
+        if ($request->filled('password')) {
+            $payload['password'] = Hash::make($payload['password']);
+        } else {
+            unset($payload['password']);
+        }
+
+        if ($request->filled('email') && $payload['email'] !== $user->email) {
+            $user->email_verified_at = null;
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Exception $e) {
+                Log::error('Failed sending verification email after email update', [
+                    'user_id' => $user->id,
+                    'email' => $payload['email'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $user->update($payload);
+
         return ApiResponse::success("User updated successfully", $user, 200);
     }
 
