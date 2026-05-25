@@ -74,25 +74,12 @@ export default function FormLogin() {
       }
 
       const token = data.data?.token;
-      const user = data.data?.user;
 
       if (!token) {
         throw new Error("Token login tidak ditemukan dari server.");
       }
 
-      const { firstName, lastName, profileName } = getProfileName(user);
-
       localStorage.setItem("auth_token", token);
-      localStorage.setItem(
-        "auth_user",
-        JSON.stringify({
-          ...(user || {}),
-          first_name: firstName,
-          last_name: lastName,
-          profile_name: profileName,
-        }),
-      );
-      localStorage.setItem("profile_name", profileName);
 
       setEmail("Please Wait...");
       setPassword("");
@@ -119,7 +106,7 @@ export default function FormLogin() {
             id="email"
             type="email"
             className="form-control bg-body-secondary"
-            placeholder="Masukkan email"
+            placeholder="name@example.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -132,7 +119,7 @@ export default function FormLogin() {
         <div className="mb-4 input-group">
           <input
             id="password"
-            placeholder="Silakan isi password..."
+            placeholder="******"
             className="form-control bg-body-secondary"
             type={showPassword ? "text" : "password"}
             value={password}

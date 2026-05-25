@@ -96,6 +96,7 @@ export default function FormSignup() {
             required
             type="text"
             id="name"
+            placeholder="John Doe"
             className="form-control form-control-sm bg-body-secondary"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -109,6 +110,7 @@ export default function FormSignup() {
             required
             type="email"
             id="email"
+            placeholder="name@example.com"
             className="form-control form-control-sm bg-body-secondary"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -122,6 +124,7 @@ export default function FormSignup() {
             required
             type={showPassword ? "text" : "password"}
             id="password"
+            placeholder="******"
             className="form-control form-control-sm bg-body-secondary"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -138,6 +141,7 @@ export default function FormSignup() {
             required
             type={showResetPassword ? "text" : "password"}
             id="repeatPassword"
+            placeholder="******"
             className="form-control form-control-sm bg-body-secondary"
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
@@ -160,15 +164,6 @@ export default function FormSignup() {
             Register
           </button>
         </div>
-        <p className="text-center text-muted mt-2 mb-0">
-          Sudah punya akun? {" "}
-          <a href="/login" className="fw-bold text-body">
-            <u className="text-decoration-none">Silakan Login</u>
-          </a>
-        </p>
-        <p className="text-center text-muted mt-2 mb-0">
-          Belum menerima email? <a href="/verify-email">Kirim ulang verifikasi</a>
-        </p>
       </form >
     </>
   );

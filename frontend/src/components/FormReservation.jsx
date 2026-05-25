@@ -8,13 +8,7 @@ function formatTime(value) {
 
 export default function FormReservation() {
   const [reservations, setReservations] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("auth_user") || "null");
-    } catch (e) {
-      return null;
-    }
-  });
+  const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
   const [complaint, setComplaint] = useState("");
@@ -24,7 +18,26 @@ export default function FormReservation() {
   useEffect(() => {
     let mounted = true;
 
-    api.get("/api/doctors")
+    const token = localStorage.getItem("auth_token");
+
+    api.get("/api/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!mounted) return;
+        setSelectedUser(response.data.data);
+      })
+      .catch((error) => {
+        console.error("Gagal mengambil data users", error);
+      })
+
+    api.get("/api/doctors", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((resDoctors) => {
         if (!mounted) return;
 
@@ -79,7 +92,6 @@ export default function FormReservation() {
     }
 
     const token = localStorage.getItem("auth_token");
-    const storedUser = JSON.parse(localStorage.getItem("auth_user") || "null");
 
     if (!token) {
       showToast("warning", "Login diperlukan", "Silakan login terlebih dahulu.");
@@ -100,7 +112,7 @@ export default function FormReservation() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: storedUser?.id || selectedUser?.id,
+          user_id: selectedUser?.id,
           schedule_id: selectedScheduleId,
           keluhan: complaint.trim(),
         }),
