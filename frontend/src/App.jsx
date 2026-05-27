@@ -7,6 +7,7 @@ import Schedule from "./pages/Schedule.jsx";
 import Signup from "./pages/Signup.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
 import WaitVerifyEmail from "./pages/WaitVerifyEmail.jsx";
+import Admin from "./pages/Admin.jsx";
 
 const routes = {
   "/": Home,
@@ -18,6 +19,7 @@ const routes = {
   "/signup": Signup,
   "/verify-email": VerifyEmail,
   "/wait-verify-email": WaitVerifyEmail,
+  "/admin/dashboard": Admin,
 };
 
 export default function App() {
