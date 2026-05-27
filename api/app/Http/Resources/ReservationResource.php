@@ -12,7 +12,7 @@ class ReservationResource extends JsonResource
         return [
             'id' => $this->id,
             'status' => $this->status,
-            'created_at' => $this->created_at,
+            'keluhan' => $this->keluhan,
 
             'user' => $this->user ? [
                 'id' => $this->user->id,

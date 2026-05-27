@@ -9,13 +9,14 @@ use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
 use App\Helpers\ApiResponse;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class ReservationController extends Controller
 {
     public function index(Request $request)
     {
         $query = Reservation::with(['user', 'schedule.doctor'])
-            ->where('user_id', $request->user()->id);
+            ->whereDate('created_at', Carbon::today());
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -27,8 +28,12 @@ class ReservationController extends Controller
             });
         }
 
-        return ReservationResource::collection(
-            $query->paginate(5)
+        $reservations = $query->paginate(5);
+
+        return ApiResponse::success(
+            "Reservation retrieved successfully",
+            ReservationResource::collection($reservations),
+            200
         );
     }
 
@@ -69,6 +74,7 @@ class ReservationController extends Controller
         // cek double booking
         $alreadyBooked = Reservation::where('user_id', $request->user()->id)
             ->where('schedule_id', $schedule->id)
+            ->where('status', '!=', 'rejected')
             ->exists();
 
         if ($alreadyBooked) {
@@ -102,16 +108,18 @@ class ReservationController extends Controller
             ], 400);
         }
 
-        // $schedule = $reservation->schedule;
+        $schedule = $reservation->schedule;
 
-        // if ($schedule->reservations()
-        //     ->where('status', 'approved')
-        //     ->count() >= $schedule->quota) {
+        if (
+            $schedule->reservations()
+                ->where('status', 'approved')
+                ->count() >= $schedule->quota
+        ) {
 
-        //     return response()->json([
-        //         'message' => 'Kuota penuh'
-        //     ], 400);
-        // }
+            return response()->json([
+                'message' => 'Kuota penuh'
+            ], 400);
+        }
 
         $reservation->update(['status' => 'approved']);
 

@@ -14,6 +14,7 @@ export default function FormReservation() {
   const [complaint, setComplaint] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [noDoctors, setNoDoctors] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -42,6 +43,11 @@ export default function FormReservation() {
         if (!mounted) return;
 
         const rawReservations = resDoctors.data?.data || [];
+
+        if (rawReservations.length === 0) {
+          setNoDoctors(true);
+          return;
+        }
 
         setReservations(
           rawReservations.map((reservation) => ({
@@ -172,8 +178,9 @@ export default function FormReservation() {
           value={selectedDoctorId}
           onChange={handleDoctorChange}
         >
-          <option value="">Pilih Poli</option>
-          {reservations.map((reservation) => (
+          {!noDoctors && <option value="">Pilih Poli</option>}
+          {noDoctors && <option value="">Tidak ada jadwal dokter hari ini</option>}
+          {!noDoctors && reservations.map((reservation) => (
             <option key={reservation.id} value={reservation.id}>
               {reservation.specialization}
             </option>

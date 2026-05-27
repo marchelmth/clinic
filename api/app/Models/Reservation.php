@@ -13,6 +13,10 @@ class Reservation extends Model
         'status'
     ];
 
+    protected $hidden = [
+        'created_at'
+    ];
+
     // relasi ke schedule
     public function schedule()
     {
