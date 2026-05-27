@@ -89,7 +89,7 @@ class AuthController extends Controller
 
             $user->email = $request->email;
 
-            $user->save();
+            $user->save();  
 
             DB::commit();
 
@@ -150,7 +150,7 @@ class AuthController extends Controller
             return ApiResponse::error('Email harus diverifikasi terlebih dahulu', 403);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token', ['*'], now()->addHours(12))->plainTextToken;
 
         return ApiResponse::success('Login Berhasil', [
             'token' => $token,
