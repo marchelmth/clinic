@@ -17,21 +17,20 @@ Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])
     ->middleware('signed')
     ->name('verification.verify');
 Route::get('/email/verify-status', [UserController::class, 'verifyStatusVerificationEmail']);
-Route::get('/admin/stats', [ReservationController::class, 'stats']);        
-
+Route::get('/admin/stats', [ReservationController::class, 'stats']);
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 
 
 Route::middleware('auth:sanctum')->group(function () {
+
     Route::get('/user', [UserController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // reservation (nanti pakai user login)
-    Route::get('/reservations', [ReservationController::class, 'index']);
+    Route::get('/reservations', [ReservationController::class, 'getAllReservations']);
+    Route::get('/reservation', [ReservationController::class, 'index']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::get('/reservations/{id}', [ReservationController::class, 'show']);
-       //  tambahan baru
     Route::post('/reservations/{id}/approve', [ReservationController::class, 'approve']);
     Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject']);
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
