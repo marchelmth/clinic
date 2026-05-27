@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 class Doctor extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    
+
     protected $fillable = [
         'name',
         'specialization',
@@ -30,4 +30,4 @@ class Doctor extends Authenticatable
     {
         return $this->hasMany(Schedule::class);
     }
-}   
+}

@@ -7,15 +7,54 @@ use App\Models\Doctor;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class DoctorController extends Controller
 {
     public function index()
     {
-        $doctors = Doctor::with('schedules')->get();
+        $daysMap = [
+            'Senin' => 1,
+            'Selasa' => 2,
+            'Rabu' => 3,
+            'Kamis' => 4,
+            'Jumat' => 5,
+            'Sabtu' => 6,
+            'Minggu' => 7
+        ];
+
+        $todayNumber = Carbon::now()->dayOfWeekIso;
+
+        $doctors = Doctor::with('schedules')->get()->filter(function ($doctor) use ($daysMap, $todayNumber) {
+            $hasScheduleToday = false;
+
+            foreach ($doctor->schedules as $schedule) {
+                $range = explode(' - ', $schedule->date);
+
+                if (count($range) === 2) {
+                    $startDay = $daysMap[trim($range[0])] ?? 0;
+                    $endDay = $daysMap[trim($range[1])] ?? 0;
+
+                    if ($startDay > 0 && $endDay > 0 && $todayNumber >= $startDay && $todayNumber <= $endDay) {
+                        $hasScheduleToday = true;
+                        break;
+                    }
+                } elseif (count($range) === 1) {
+                    $singleDay = $daysMap[trim($range[0])] ?? 0;
+                    if ($singleDay === $todayNumber) {
+                        $hasScheduleToday = true;
+                        break;
+                    }
+                }
+            }
+
+            return $hasScheduleToday;
+        })->values();
+
         if ($doctors->isEmpty()) {
-            return ApiResponse::error("No doctors found", 404);
+            return ApiResponse::error("No doctors found for today", 404);
         }
+
         return ApiResponse::success("Doctors retrieved successfully", $doctors, 200);
     }
 
@@ -85,4 +124,3 @@ class DoctorController extends Controller
         return ApiResponse::success("Doctor deleted successfully", $doctor->only('name'), 200);
     }
 }
-    
