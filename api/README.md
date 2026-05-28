@@ -41,13 +41,27 @@ Ubah konfigurasi database di file `.env` menjadi:
 ```env
 APP_NAME="Clinic API"
 APP_URL=http://localhost:3000
+APP_KEY=your_app_key_here
+APP_ENV=local
+APP_DEBUG=true
+FRONTEND_URL=http://localhost:5173
 
 DB_CONNECTION=mysql
 DB_HOST=db
 DB_PORT=3306
-DB_DATABASE=clinic
-DB_USERNAME=root
-DB_PASSWORD=root
+DB_DATABASE=your_database_name_here
+DB_USERNAME=your_database_username_here
+DB_PASSWORD=your_database_password_here
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_email_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=your_email@gmail.com
+MAIL_FROM_NAME=${APP_NAME}
+
 ```
 
 ### 3. Build dan jalankan container
