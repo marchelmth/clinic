@@ -3,16 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Queue extends Authenticatable
+class Queue extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
     
     protected $fillable = [
-        'id_reservation',
+        'reservation_id',
+        'queue_number',
+        'status',
+        'called_at',
+        'served_at',
     ];
 
     protected $hidden = [
@@ -22,6 +26,6 @@ class Queue extends Authenticatable
 
     public function reservation()
     {
-        return $this->belongsTo(Reservation::class, 'id');
+        return $this->belongsTo(Reservation::class);
     }
 }   

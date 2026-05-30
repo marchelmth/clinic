@@ -12,8 +12,16 @@ return new class extends Migration {
     {
         Schema::create('queue', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id')->constrained('reservations')->cascadeOnDelete();
+            $table->foreignId('reservation_id')->constrained()->cascadeOnDelete();
+            $table->string('poli_code');
+            $table->integrer('queue_number');
+            $table->string('queue_code');
+            $table->boolean('status')->default("waiting");
+            $table->timestamp('called_at')->nullable();
+            $table->timestamp('served_at')->nullable();
             $table->timestamps();
+
+            $table->unique(['reservation_id']);
         });
     }
 

@@ -17,7 +17,7 @@ class QueueController extends Controller
             ->where('user_id', $request->user()->id);
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status', $request->status == 'approved');
         }
 
         if ($request->filled('date')) {
@@ -28,6 +28,29 @@ class QueueController extends Controller
 
         return ReservationResource::collection(
             $query->paginate(5)
+        );
+    }
+
+    public function show($id, Request $request)
+    {
+        $queue = Queue::with(['user', 'schedule.doctor'])
+            ->where('user_id', $request->user()->id)
+            ->findOrFail($id);
+
+        return new ReservationResource($queue);
+    }
+
+    public function QueueDone($id)
+    {
+        $queue = Queue::findOrFail($id);
+        $queue->status = true;
+        $queue->served_at = now();
+        $queue->save();
+
+        return ApiResponse::success(
+            "Queue marked as done",
+            new ReservationResource($queue),
+            200
         );
     }
 }
