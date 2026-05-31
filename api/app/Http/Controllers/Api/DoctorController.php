@@ -52,7 +52,7 @@ class DoctorController extends Controller
         })->values();
 
         if ($doctors->isEmpty()) {
-            return ApiResponse::error("No doctors found for today", 404);
+            return ApiResponse::success("No doctors found for today", $doctors ,200);
         }
 
         return ApiResponse::success("Doctors retrieved successfully", $doctors, 200);
