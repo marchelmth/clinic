@@ -10,10 +10,14 @@ use Laravel\Sanctum\HasApiTokens;
 class Queue extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    protected $table = 'queue';
     
     protected $fillable = [
         'reservation_id',
+        'poli_code',
         'queue_number',
+        'queue_code',
         'status',
         'called_at',
         'served_at',
@@ -28,4 +32,4 @@ class Queue extends Model
     {
         return $this->belongsTo(Reservation::class);
     }
-}   
+}

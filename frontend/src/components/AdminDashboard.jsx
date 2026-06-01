@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
 import { ol } from "framer-motion/client";
+import { timeFormatter } from "../../helper/DateTimeFormat.js";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
@@ -41,10 +42,10 @@ export default function AdminDashboard() {
                     if (mounted && res.data) {
                         const reservationsData = res.data.data;
                         setReservations(reservationsData);
-                        console.log("Reservations data:", reservationsData);
+                        console.log("Reservations data:", reservationsData); // development only !!
                     }
 
-                    if (!res.data.data) throw new Error("No data received");
+                    if (!res.data.data) throw new Error("Error occured while fetching reservations");
                 })
                 .catch((error) => {
                     console.error("Error fetching reservations:", error);
@@ -110,7 +111,7 @@ export default function AdminDashboard() {
             {reservations.length > 0 ? (
                 <>
                     <h4>Reservations</h4>
-                    <table className="table table-bordered mt-3">
+                    <table className="table table-bordered mt-3 text-center">
                         <thead>
                             <tr>
                                 <th>Nama Pasien</th>
@@ -118,6 +119,7 @@ export default function AdminDashboard() {
                                 <th>Nama Dokter</th>
                                 <th>Spesialis</th>
                                 <th>Status</th>
+                                <th>Waktu Reservasi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,6 +160,7 @@ export default function AdminDashboard() {
                                             )}
                                         </select>
                                     </td>
+                                    <td>{timeFormatter(reservation.created_at)}</td>
                                 </tr>
                             ))}
                         </tbody>

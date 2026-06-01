@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Schedule;
+use App\Models\Queue;
 use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
 use App\Helpers\ApiResponse;
@@ -15,8 +16,7 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reservation::with(['user', 'schedule.doctor'])
-            ->whereDate('created_at', Carbon::today());
+        $query = Reservation::with(['user', 'schedule.doctor']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -74,8 +74,12 @@ class ReservationController extends Controller
         // cek double booking
         $alreadyBooked = Reservation::where('user_id', $request->user()->id)
             ->where('schedule_id', $schedule->id)
-            ->where('status', '!=', 'rejected')
-            ->exists();
+            ->whereNotIn('status', ['rejected', 'cancelled'])
+            ->get()
+            ->filter(function ($reservation) {
+                return !$reservation->is_expired;
+            })
+            ->isNotEmpty();
 
         if ($alreadyBooked) {
             return response()->json([
@@ -102,26 +106,56 @@ class ReservationController extends Controller
     {
         $reservation = Reservation::with('schedule')->findOrFail($id);
 
-        if (in_array($reservation->status, ['approved', 'cancelled'])) {
-            return response()->json([
-                'message' => 'Tidak bisa approve'
-            ], 400);
-        }
+        // if (in_array($reservation->status, ['approved', 'cancelled', 'pending'])) {
+        //     return response()->json([
+        //         'message' => 'Tidak bisa approve'
+        //     ], 400);
+        // }
 
-        $schedule = $reservation->schedule;
+        $schedule = $reservation->schedule()->with('doctor')->first();
 
-        if (
-            $schedule->reservations()
-                ->where('status', 'approved')
-                ->count() >= $schedule->quota
-        ) {
+        $poliName = $schedule->doctor->specialization;
 
-            return response()->json([
-                'message' => 'Kuota penuh'
-            ], 400);
-        }
+        $policode = match (strtolower($poliName)) {
+            'umum' => 'UMUM',
+            'gigi' => 'GIGI',
+            'anak' => 'ANAK',
+            'mata' => 'MATA',
+            'telinga hidung tenggorokan (THT)' => 'THT',
+            default => 'UMUM'
+        };
+
+        // if (
+        //     $schedule->reservations()
+        //     ->where('status', 'approved')
+        //     // ->count() >= $schedule->quota
+        // ) {
+
+        //     return response()->json([
+        //         'message' => 'Kuota penuh'
+        //     ], 400);
+        // }
 
         $reservation->update(['status' => 'approved']);
+
+        $lastQueueNumber = Queue::where('poli_code', $policode)
+            ->whereHas('reservation.schedule', function ($q) use ($schedule) {
+                $q->where('date', $schedule->date);
+            })
+            ->max('queue_number');
+
+        $nextNumber = ($lastQueueNumber ?? 0) + 1;
+
+        $queueCode = $policode . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        Queue::create([
+            'reservation_id' => $reservation->id,
+            'poli_code' => $policode,
+            'queue_number' => $nextNumber,
+            'queue_code' => $queueCode,
+            'status' => false,
+            'called_at' => Carbon::now()
+        ]);
 
         return response()->json([
             'message' => 'Berhasil approve',

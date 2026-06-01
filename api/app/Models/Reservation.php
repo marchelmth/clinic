@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Reservation extends Model
 {
@@ -13,9 +14,14 @@ class Reservation extends Model
         'status'
     ];
 
-    protected $hidden = [
-        'created_at'
-    ];
+    protected $appends = ['is_expired'];
+
+    public function getIsExpiredAttribute()
+    {
+        $today = Carbon::today('Asia/Makassar');
+        $reservationDate = Carbon::parse($this->created_at);
+        return $reservationDate->lt($today);
+    }
 
     // relasi ke schedule
     public function schedule()

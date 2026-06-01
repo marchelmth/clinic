@@ -14,9 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('reservation_id')->constrained()->cascadeOnDelete();
             $table->string('poli_code');
-            $table->integrer('queue_number');
+            $table->integer('queue_number');
             $table->string('queue_code');
-            $table->boolean('status')->default("waiting");
+            $table->boolean('status')->default(false);
             $table->timestamp('called_at')->nullable();
             $table->timestamp('served_at')->nullable();
             $table->timestamps();
