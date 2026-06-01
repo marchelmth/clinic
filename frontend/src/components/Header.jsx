@@ -50,9 +50,8 @@ export default function Header({ page = "", className = "" }) {
               <li className="nav-item">
                 <a
                   href="/reservation"
-                  className={`nav-link text-dark${protectedClass} ${
-                    page === "Reservasi" ? "active fw-bold" : ""
-                  }`}
+                  className={`nav-link text-dark${protectedClass} ${page === "Reservasi" ? "active fw-bold" : ""
+                    }`}
                   {...protectedProps}
                 >
                   Reservasi
@@ -68,7 +67,13 @@ export default function Header({ page = "", className = "" }) {
                 </a>
               </li>
             </ul>
-            <ProfilePicture className="d-none d-lg-block mx-4" />
+            {isLoggedIn ? (
+              <ProfilePicture className="d-none d-lg-block mx-4" />
+            ) : (
+              <a href="/login" className="btn btn-success btn-sm text-white rounded-2 me-2">
+                Login
+              </a>
+            )}
           </div>
         </div>
       </nav>
