@@ -48,7 +48,7 @@ export default function FormReservation() {
           setNoDoctors(true);
           return;
         }
-
+        
         setReservations(
           rawReservations.map((reservation) => ({
             id: reservation.id,
@@ -179,7 +179,7 @@ export default function FormReservation() {
           onChange={handleDoctorChange}
         >
           {!noDoctors && <option value="">Pilih Poli</option>}
-          {noDoctors && <option value="">Tidak ada jadwal dokter hari ini</option>}
+          {noDoctors && <option value="">Tidak ada dokter hari ini</option>}
           {!noDoctors && reservations.map((reservation) => (
             <option key={reservation.id} value={reservation.id}>
               {reservation.specialization}
