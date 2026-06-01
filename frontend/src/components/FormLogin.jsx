@@ -3,24 +3,13 @@ import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
 import { a } from "framer-motion/client";
 
-function getProfileName(user) {
-  const nameParts = (user?.name || "").trim().split(/\s+/);
-  const firstName = nameParts[0] || "";
-  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
-
-  return {
-    firstName,
-    lastName,
-    profileName: [firstName, lastName].filter(Boolean).join(" "),
-  };
-}
-
 export default function FormLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [verifyEmailLink, setVerifyEmailLink] = useState("");
+  const token = localStorage.getItem("auth_token");
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -52,31 +41,42 @@ export default function FormLogin() {
       });
 
       const responseBody = await response.text();
-      const data = responseBody ? JSON.parse(responseBody) : {};
+      let data = {};
+
+      try {
+        data = responseBody ? JSON.parse(responseBody) : {};
+      } catch (error) {
+        data = { message: responseBody || "Response tidak valid" };
+      }
 
       if (!response.ok) {
-        let message = data.message || `Request gagal dengan status ${response.status}`;
-
         if (response.status === 403) {
-          message = (
-            <>
-              Email Belum diverifikasi. {" "}
-              <a href="/verify-email" className="text-white text-decoration-underline">
+          showToast(
+            "error",
+            "Error",
+            <span>
+              Email Belum diverifikasi.{" "}
+              <a href="/verify-email" style={{ color: "#fff", textDecoration: "underline" }}>
                 Kirim ulang email verifikasi.
               </a>
-            </>
+            </span>
           );
+          return;
         }
 
-        throw {
-          message,
-        };
+        let rawMessage = data.message || `Request gagal dengan status ${response.status}`;
+        const removeQuotes = (str) => str.replace(/^"(.*)"$/, "$1");
+        const finalMessage = typeof rawMessage === "object" ? removeQuotes(JSON.stringify(rawMessage.email[0])) : rawMessage;
+
+        console.error("Login error:", finalMessage);
+
+        throw new Error(finalMessage);
       }
 
       const token = data.data?.token;
 
       if (!token) {
-        throw new Error("Token login tidak ditemukan dari server.");
+        throw new Error("Akun belum terdaftar silakan daftar terlebih dahulu.");
       }
 
       localStorage.setItem("auth_token", token);
@@ -87,65 +87,73 @@ export default function FormLogin() {
 
       setTimeout(() => {
         window.location.href = "/";
-      }, 900);
+      }, 1100);
     } catch (error) {
       showToast("error", "Error", error.message || "Terjadi kesalahan saat login.");
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   return (
     <>
-      <form id="loginForm" noValidate onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label fw-medium" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="form-control bg-body-secondary"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-        </div>
+      {!token ? (
+        <>
+          <form id="loginForm" noValidate onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="form-label fw-medium" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                className="form-control bg-body-secondary"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
 
-        <label className="form-label fw-medium" htmlFor="password">
-          Password
-        </label>
-        <div className="mb-4 input-group">
-          <input
-            id="password"
-            placeholder="******"
-            className="form-control bg-body-secondary"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-          <span
-            className="input-group-text"
-            onClick={toggleShowPassword}
-            style={{ cursor: "pointer" }}
-          >
-            <i className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}></i>
-          </span>
-        </div>
+            <label className="form-label fw-medium" htmlFor="password">
+              Password
+            </label>
+            <div className="mb-4 input-group">
+              <input
+                id="password"
+                placeholder="******"
+                className="form-control bg-body-secondary"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+              <span
+                className="input-group-text"
+                onClick={toggleShowPassword}
+                style={{ cursor: "pointer" }}
+              >
+                <i className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+              </span>
+            </div>
 
-        <div className="d-grid">
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-            {isSubmitting ? "Memproses..." : "Login"}
-          </button>
-        </div>
-      </form>
+            <div className="d-grid">
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? "Memproses..." : "Login"}
+              </button>
+            </div>
+          </form>
 
-      <p className="text-center mt-3">
-        Belum punya akun? <a href="/signup">Daftar di sini</a>
-      </p>
+          <p className="text-center mt-3">
+            Belum punya akun? <a href="/signup">Daftar di sini</a>
+          </p>
+        </>
+      ) : (
+        <p className="text-center mt-3">
+          Sudah login. <a href="/">Kembali ke beranda</a>
+        </p>
 
+      )}
     </>
   );
 }
