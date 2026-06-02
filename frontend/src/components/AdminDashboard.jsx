@@ -8,9 +8,10 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const token = localStorage.getItem("auth_token");
-
-
 
     useEffect(() => {
         let mounted = true;
@@ -18,8 +19,7 @@ export default function AdminDashboard() {
         api.get("/api/admin/stats")
             .then((res) => {
                 if (mounted && res) {
-                    const statsData = res.data;
-                    setStats(statsData);
+                    setStats(res.data);
                 }
 
                 if (!res.data) throw new Error("No data received");
@@ -27,22 +27,29 @@ export default function AdminDashboard() {
             .catch((error) => {
                 console.error("Error fetching profile:", error);
                 showToast("error", "Gagal", "Gagal mengambil data profil.");
-            })
-            .finally(() => {
-                if (mounted) setLoading(false);
             });
 
+        return () => {
+            mounted = false;
+        }
+    }, []);
+
+    useEffect(() => {
+        let mounted = true;
+
         if (token) {
-            api.get("api/reservation", {
+            setLoading(true);
+            api.get(`api/reservation?page=${currentPage}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             })
                 .then((res) => {
                     if (mounted && res.data) {
-                        const reservationsData = res.data.data;
-                        setReservations(reservationsData);
-                        console.log("Reservations data:", reservationsData); // development only !!
+                        setReservations(res.data.data);
+                        setCurrentPage(res.data.meta.current_page);
+                        setTotalPages(res.data.meta.last_page);
+                        console.log("Reservations data:", res.data.data); // development only !!
                     }
 
                     if (!res.data.data) throw new Error("Error occured while fetching reservations");
@@ -58,7 +65,19 @@ export default function AdminDashboard() {
                 mounted = false;
             };
         }
-    }, [token]);
+    }, [token, currentPage]);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     const handleStatusChange = async (reservationId, status) => {
         try {
@@ -165,6 +184,22 @@ export default function AdminDashboard() {
                             ))}
                         </tbody>
                     </table>
+
+                    <div className="d-flex justify-content-between align-items-center mt-3">
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 1}>
+                            Previous
+                        </button>
+                        <span>Page {currentPage} of {totalPages}</span>
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages}>
+                            Next
+                        </button>
+                    </div>
                 </>
             ) : (
                 <p>No reservations found.</p>
