@@ -55,7 +55,6 @@ class AuthController extends Controller
                     'user' => $user->only('id', 'name', 'email', 'role')
                 ]);
             }
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -89,7 +88,7 @@ class AuthController extends Controller
 
             $user->email = $request->email;
 
-            $user->save();  
+            $user->save();
 
             DB::commit();
 
@@ -110,7 +109,6 @@ class AuthController extends Controller
                     'user' => $user->only('email')
                 ]);
             }
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -134,11 +132,11 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
         if ($validator->fails()) {
-            return ApiResponse::error( $validator->errors(), 400);
+            return ApiResponse::error($validator->errors(), 400);
         }
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) { 
+        if (!$user) {
             return ApiResponse::error("Akun belum terdaftar, Buat akun terlebih dahulu", 404);
         }
 
