@@ -30,11 +30,17 @@ class ReservationController extends Controller
 
         $reservations = $query->paginate(5);
 
-        return ApiResponse::success(
-            "Reservation retrieved successfully",
-            ReservationResource::collection($reservations),
-            200
-        );
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Reservations retrieved successfully',
+            'data' => ReservationResource::collection($reservations),
+            'meta' => [
+                'current_page' => $reservations->currentPage(),
+                'last_page' => $reservations->lastPage(),
+                'per_page' => $reservations->perPage(),
+                'total' => $reservations->total(),
+            ]
+        ], 200);
     }
 
     // GET detail reservation
