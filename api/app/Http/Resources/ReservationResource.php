@@ -34,6 +34,11 @@ class ReservationResource extends JsonResource
                     'specialization' => $this->schedule->doctor->specialization,
                 ] : null
 
+            ] : null,
+
+            'queue' => $this->queue ? [
+                'id' => $this->queue->id,
+                'status' => $this->queue->status,
             ] : null
         ];
     }

@@ -29,6 +29,11 @@ class Reservation extends Model
         return $this->belongsTo(Schedule::class);
     }
 
+    public function queue()
+    {
+        return $this->hasOne(Queue::class);
+    }
+
     // relasi ke user
     public function user()
     {

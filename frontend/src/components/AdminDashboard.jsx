@@ -112,6 +112,27 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleCompleteQueue = async (queueId) => {
+        try {
+            const res = await api.put(`/api/queues/${queueId}/complete`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                console.log(res.data)
+                showToast("success", "Success", res.data.message);
+            } else {
+                throw new Error("No data received");
+            }
+
+        } catch (error) {
+            console.error("Error completing queue:", error);
+            showToast("error", "Error", "Failed to complete queue.");
+        }
+    };
+
     return (
         <div className="container py-2 font-iosevka">
             {stats ? (
@@ -133,17 +154,20 @@ export default function AdminDashboard() {
                     <table className="table table-bordered mt-3 text-center">
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Nama Pasien</th>
                                 <th>Keluhan</th>
                                 <th>Nama Dokter</th>
                                 <th>Spesialis</th>
                                 <th>Status</th>
+                                <th>Antrean Selesai</th>
                                 <th>Waktu Reservasi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {reservations.map((reservation) => (
                                 <tr key={reservation.id}>
+                                    <td>{reservation.id}</td>
                                     <td>{reservation.user.name}</td>
                                     <td>{reservation.keluhan}</td>
                                     <td>dr. {reservation.schedule.doctor.name}</td>
@@ -179,6 +203,20 @@ export default function AdminDashboard() {
                                             )}
                                         </select>
                                     </td>
+                                    <td>{reservation.queue ? (
+                                        reservation.queue.status === 1 ? (
+                                            <span className="badge bg-success">Done</span>
+                                        ) : (
+                                            <button
+                                                className="btn btn-sm btn-success"
+                                                onClick={() => handleCompleteQueue(reservation.queue.id)}
+                                            >
+                                                Mark as Done
+                                            </button>
+                                        )
+                                    ) : (
+                                        <span className="text-muted">N/A</span>
+                                    )}</td>
                                     <td>{timeFormatter(reservation.created_at)}</td>
                                 </tr>
                             ))}

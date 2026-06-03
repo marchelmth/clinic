@@ -67,4 +67,19 @@ class QueueController extends Controller
             200
         );
     }
+
+    // COMPLETE queue -- Admin Only --
+    public function completeQueue($id)
+    {
+        $queue = Queue::findOrFail($id);
+        $queue->status = 1;
+        $queue->served_at = now();
+        $queue->save();
+
+        return ApiResponse::success(
+            "Queue marked as completed",
+            new QueueResource($queue),
+            200
+        );
+    }
 }

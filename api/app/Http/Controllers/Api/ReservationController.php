@@ -16,7 +16,7 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reservation::with(['user', 'schedule.doctor']);
+        $query = Reservation::with(['user', 'schedule.doctor', 'queue']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -46,7 +46,7 @@ class ReservationController extends Controller
     // GET detail reservation
     public function show($id, Request $request)
     {
-        $reservation = Reservation::with(['user', 'schedule.doctor'])
+        $reservation = Reservation::with(['user', 'schedule.doctor', 'queue'])
             ->where('user_id', $request->user()->id)
             ->findOrFail($id);
 
@@ -123,6 +123,7 @@ class ReservationController extends Controller
         $poliName = $schedule->doctor->specialization;
 
         $policode = match (strtolower($poliName)) {
+            'tulang' => 'TLNG',
             'umum' => 'UMUM',
             'gigi' => 'GIGI',
             'anak' => 'ANAK',

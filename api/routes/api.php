@@ -38,4 +38,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject']);
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
     Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
+    Route::put('/queues/{id}/complete', [QueueController::class, 'completeQueue']);
 });
