@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
-import { ol } from "framer-motion/client";
 import { timeFormatter } from "../../helper/DateTimeFormat.js";
+
+const TIME_ZONE = "Asia/Makassar";
+const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+});
+
+const getDateKey = (value) => dateKeyFormatter.format(new Date(value));
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
@@ -82,13 +91,17 @@ export default function AdminDashboard() {
     const handleStatusChange = async (reservationId, status) => {
         try {
             let endpoint = "";
+            let newStatus = "";
 
             if (status === "approve") {
                 endpoint = `/api/reservations/${reservationId}/approve`;
+                newStatus = "approved";
             } else if (status === "reject") {
                 endpoint = `/api/reservations/${reservationId}/reject`;
+                newStatus = "rejected";
             } else if (status === "cancel") {
                 endpoint = `/api/reservations/${reservationId}/cancel`;
+                newStatus = "cancelled";
             } else {
                 return;
             }
@@ -100,15 +113,24 @@ export default function AdminDashboard() {
             });
 
             if (res.data) {
+                setReservations((prevReservations) =>
+                    prevReservations.map((reservation) =>
+                        reservation.id === reservationId
+                            ? { ...reservation, status: newStatus }
+                            : reservation
+                    )
+                );
+
                 console.log(res.data)
                 showToast("success", "Success", res.data.message);
+
             } else {
                 throw new Error("No data received");
             }
 
         } catch (error) {
             console.error("Error changing status:", error);
-            showToast("error", "Error", "Failed to change status.");
+            showToast("error", "Error", error.message || "Failed to change status.");
         }
     };
 
@@ -121,6 +143,14 @@ export default function AdminDashboard() {
             });
 
             if (res.data) {
+                setReservations((prevReservations) =>
+                    prevReservations.map((reservation) =>
+                        reservation.queue && reservation.queue.id === queueId
+                            ? { ...reservation, queue: { ...reservation.queue, status: 1 } }
+                            : reservation
+                    )
+                );
+
                 console.log(res.data)
                 showToast("success", "Success", res.data.message);
             } else {
@@ -131,6 +161,11 @@ export default function AdminDashboard() {
             console.error("Error completing queue:", error);
             showToast("error", "Error", "Failed to complete queue.");
         }
+    };
+
+    const isReservationToday = (reservation) => {
+        if (!reservation.created_at) return false;
+        return getDateKey(reservation.created_at) === getDateKey(new Date());
     };
 
     return (
@@ -165,61 +200,71 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {reservations.map((reservation) => (
-                                <tr key={reservation.id}>
-                                    <td>{reservation.id}</td>
-                                    <td>{reservation.user.name}</td>
-                                    <td>{reservation.keluhan}</td>
-                                    <td>dr. {reservation.schedule.doctor.name}</td>
-                                    <td>{reservation.schedule.doctor.specialization}</td>
-                                    <td>
-                                        <select
-                                            className="form-select"
-                                            name="status"
-                                            id={`status-${reservation.id}`}
-                                            value={reservation.status}
-                                            onChange={(e) => handleStatusChange(reservation.id, e.target.value)}
-                                            disabled={reservation.status === "cancelled"}
-                                        >
-                                            <option value="pending" disabled hidden>Pending</option>
-                                            <option value="approved" disabled hidden>Approved</option>
-                                            <option value="rejected" disabled hidden>Rejected</option>
-                                            <option value="cancelled" disabled hidden>Cancelled</option>
+                            {reservations.map((reservation) => {
+                                const isToday = isReservationToday(reservation);
+                                const isDisabled = !isToday;
 
-                                            {reservation.status === "pending" && (
-                                                <>
-                                                    <option value="approve">Approve</option>
-                                                    <option value="reject">Reject</option>
-                                                    <option value="cancel">Cancel</option>
-                                                </>
-                                            )}
-
-                                            {reservation.status === "approved" && (
-                                                <option value="cancel">Cancel</option>
-                                            )}
-
-                                            {reservation.status === "rejected" && (
-                                                <option value="approve">Approve</option>
-                                            )}
-                                        </select>
-                                    </td>
-                                    <td>{reservation.queue ? (
-                                        reservation.queue.status === 1 ? (
-                                            <span className="badge bg-success">Done</span>
-                                        ) : (
-                                            <button
-                                                className="btn btn-sm btn-success"
-                                                onClick={() => handleCompleteQueue(reservation.queue.id)}
+                                return (
+                                    <tr key={reservation.id} className={isDisabled ? "text-muted" : ""}>
+                                        <td>{reservation.id}</td>
+                                        <td>{reservation.user.name}</td>
+                                        <td>{reservation.keluhan}</td>
+                                        <td>dr. {reservation.schedule.doctor.name}</td>
+                                        <td>{reservation.schedule.doctor.specialization}</td>
+                                        <td>
+                                            <select
+                                                className={`form-select ${isDisabled ? "text-muted bg-body-secondary" : ""}`}
+                                                name="status"
+                                                id={`status-${reservation.id}`}
+                                                value={reservation.status}
+                                                onChange={(e) => handleStatusChange(reservation.id, e.target.value)}
+                                                disabled={isDisabled || reservation.status === "cancelled"}
                                             >
-                                                Mark as Done
-                                            </button>
-                                        )
-                                    ) : (
-                                        <span className="text-muted">N/A</span>
-                                    )}</td>
-                                    <td>{timeFormatter(reservation.created_at)}</td>
-                                </tr>
-                            ))}
+                                                <option value="pending" disabled hidden>Pending</option>
+                                                <option value="approved" disabled hidden>Approved</option>
+                                                <option value="rejected" disabled hidden>Rejected</option>
+                                                <option value="cancelled" disabled hidden>Cancelled</option>
+
+                                                {reservation.status === "pending" && (
+                                                    <>
+                                                        <option value="approve">Approve</option>
+                                                        <option value="reject">Reject</option>
+                                                        <option value="cancel">Cancel</option>
+                                                    </>
+                                                )}
+
+                                                {reservation.status === "approved" && (
+                                                    <option value="">Approved</option>
+                                                )}
+
+                                                {reservation.status === "rejected" && (
+                                                    <>
+                                                        <option value="approve">Approve</option>
+                                                        <option value="">Rejected</option>
+                                                    </>
+
+                                                )}
+                                            </select>
+                                        </td>
+                                        <td>{reservation.queue ? (
+                                            reservation.queue.status === 1 ? (
+                                                <span className={isDisabled ? "text-muted" : "badge bg-success"}>Done</span>
+                                            ) : (
+                                                <button
+                                                    className={`btn btn-sm ${isDisabled ? "btn-outline-secondary text-muted" : "btn-success"}`}
+                                                    onClick={() => handleCompleteQueue(reservation.queue.id)}
+                                                    disabled={isDisabled}
+                                                >
+                                                    Mark as Done
+                                                </button>
+                                            )
+                                        ) : (
+                                            <span className="text-muted">N/A</span>
+                                        )}</td>
+                                        <td>{timeFormatter(reservation.created_at)}</td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
 

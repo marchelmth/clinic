@@ -201,9 +201,7 @@ class ReservationController extends Controller
         }
 
         if ($reservation->status !== 'pending') {
-            return response()->json([
-                'message' => 'Hanya bisa cancel status pending'
-            ], 400);
+            return ApiResponse::error('Hanya bisa cancel reservation dengan status pending', 400);
         }
 
         $reservation->update(['status' => 'cancelled']);
