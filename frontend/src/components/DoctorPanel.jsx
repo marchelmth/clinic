@@ -8,14 +8,20 @@ function formatTime(value) {
 export default function DoctorPanel() {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     let mounted = true;
 
+    if (token) {
+      setIsLoggedIn(true);
+    }
+
     api
       .get("/api/doctors")
       .then(({ data }) => {
-        if (mounted) setDoctors(data?.data || []);
+        if (mounted) setDoctors(data.data || []);
       })
       .catch(() => {
         if (mounted) setDoctors([]);
@@ -47,7 +53,7 @@ export default function DoctorPanel() {
             <div className="card p-4 h-100 shadow-sm">
               <div className="mb-0">
                 <h4 className="fw-bold mb-1">Dr. {doctor.name}</h4>
-                <p className="text-primary mb-0">Spesialis {doctor.specialization}</p>
+                <p className="text-primary mb-0">{doctor.specialization === "UMUM" ? "Dokter" : "Spesialis"} {doctor.specialization}</p>
               </div>
 
               <hr className="text-light-emphasis" />
@@ -70,9 +76,15 @@ export default function DoctorPanel() {
                 </div>
               </div>
 
-              <a href="/signup" className="text-white text-decoration-none">
-                <button className="btn btn-primary w-100 mt-auto fw-bold">Buat Janji Temu</button>
-              </a>
+              {isLoggedIn ? (
+                <a href="/login" className="text-white text-decoration-none">
+                  <button className="btn btn-primary w-100 mt-auto fw-bold">Login untuk Buat Janji Temu</button>
+                </a>
+              ) : (
+                <a href="/reservation" className="text-white text-decoration-none">
+                  <button className="btn btn-primary w-100 mt-auto fw-bold">Buat Janji Temu</button>
+                </a>
+              )}
             </div>
           </div>
         );
