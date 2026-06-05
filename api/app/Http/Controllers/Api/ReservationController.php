@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Schedule;
 use App\Models\Queue;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
 use App\Helpers\ApiResponse;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Models\Doctor;
 
 class ReservationController extends Controller
 {
@@ -81,6 +83,9 @@ class ReservationController extends Controller
         $alreadyBooked = Reservation::where('user_id', $request->user()->id)
             ->where('schedule_id', $schedule->id)
             ->whereNotIn('status', ['rejected', 'cancelled'])
+            ->whereDoesntHave('queue', function ($query) {
+                $query->where('status', 1);
+            })
             ->get()
             ->filter(function ($reservation) {
                 return !$reservation->is_expired;
@@ -102,7 +107,7 @@ class ReservationController extends Controller
 
         return ApiResponse::success(
             new ReservationResource($reservation),
-            'Reservation berhasil dibuat',
+            'Reservasi berhasil dibuat',
             201
         );
     }
@@ -237,15 +242,49 @@ class ReservationController extends Controller
     }
 
     // ADMIN: statistik
-    public function stats()
+    public function stats(Request $request)
     {
-        return response()->json([
-            'total' => Reservation::count(),
-            'pending' => Reservation::where('status', 'pending')->count(),
-            'approved' => Reservation::where('status', 'approved')->count(),
-            'rejected' => Reservation::where('status', 'rejected')->count(),
-            'cancelled' => Reservation::where('status', 'cancelled')->count(),
-            'today' => Reservation::whereDate('created_at', now())->count()
-        ]);
+        $avgTime = Queue::where('status', '=', 1)
+            ->whereDate('created_at', Carbon::today())
+            ->avg(DB::raw('TIMESTAMPDIFF(MINUTE, called_at, served_at)'));
+
+        $userId = $request->user() ? $request->user()->id : null;
+
+        $myTicket = null;
+        $position = 0;
+
+        if ($userId) {
+            $myTicket = Queue::whereHas('reservation', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+                ->where('status', '=', 0)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
+        }
+
+        if ($myTicket) {
+            $position = Queue::where('status', '=', 0)
+                ->whereDate('created_at', Carbon::today())
+                ->where('id', '<', $myTicket->id)
+                ->count() + 1;
+        }
+
+        return ApiResponse::success(
+            'Clinic Statistik berhasil diambil',
+            [
+                'total' => Reservation::count(),
+                'pending' => Reservation::where('status', 'pending')->whereDate('created_at', Carbon::today())->count(),
+                'approved' => Reservation::where('status', 'approved')->whereDate('created_at', Carbon::today())->count(),
+                'rejected' => Reservation::where('status', 'rejected')->whereDate('created_at', Carbon::today())->count(),
+                'cancelled' => Reservation::where('status', 'cancelled')->whereDate('created_at', Carbon::today())->count(),
+                'today' => Reservation::whereDate('created_at', Carbon::today())->count(),
+                'monthly' => Reservation::whereMonth('created_at', Carbon::today()->month)->count(),
+                'done' => Queue::where('status', '=', 1)->whereDate('created_at', Carbon::today())->count(),
+                'waiting' => Queue::where('status', '=', 0)->whereDate('created_at', Carbon::today())->count(),
+                'averageTime' => $avgTime,
+                'position' => $position
+            ],
+            200
+        );
     }
 }

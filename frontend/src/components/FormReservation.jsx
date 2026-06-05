@@ -48,7 +48,7 @@ export default function FormReservation() {
           setNoDoctors(true);
           return;
         }
-        
+
         setReservations(
           rawReservations.map((reservation) => ({
             id: reservation.id,
