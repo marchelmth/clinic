@@ -26,7 +26,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Route::get('/queues', [QueueController::class, 'index']);
+    Route::get('/queues', [QueueController::class, 'show']);
+    Route::get('/queue', [QueueController::class, 'index']);
     Route::get('/user', [UserController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 

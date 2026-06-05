@@ -9,7 +9,6 @@ class QueueResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-
         return [
             'id' => $this->id,
             'reservation_id' => $this->reservation_id,
@@ -19,21 +18,23 @@ class QueueResource extends JsonResource
             'status' => (bool) $this->status,
             'called_at' => $this->called_at,
             'served_at' => $this->served_at,
-            'user' => $this->user ? [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email,
+
+            'user' => ($this->reservation && $this->reservation->user) ? [
+                'id' => $this->reservation->user->id,
+                'name' => $this->reservation->user->name,
+                'email' => $this->reservation->user->email,
             ] : null,
-            'schedule' => $this->schedule ? [
-                'id' => $this->schedule->id,
-                'date' => $this->schedule->date,
-                'start_time' => $this->schedule->start_time,
-                'end_time' => $this->schedule->end_time,
-                'quota' => $this->schedule->quota,
-                'doctor' => $this->doctor ? [
-                    'id' => $this->doctor->id,
-                    'name' => $this->doctor->name,
-                    'specialization' => $this->doctor->specialization,
+
+            'schedule' => ($this->reservation && $this->reservation->schedule) ? [
+                'id' => $this->reservation->schedule->id,
+                'date' => $this->reservation->schedule->date,
+                'start_time' => $this->reservation->schedule->start_time,
+                'end_time' => $this->reservation->schedule->end_time,
+                'quota' => $this->reservation->schedule->quota,
+                'doctor' => ($this->reservation->schedule->doctor) ? [
+                    'id' => $this->reservation->schedule->doctor->id,
+                    'name' => $this->reservation->schedule->doctor->name,
+                    'specialization' => $this->reservation->schedule->doctor->specialization,
                 ] : null,
             ] : null,
         ];
