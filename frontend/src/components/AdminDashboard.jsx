@@ -27,9 +27,11 @@ export default function AdminDashboard() {
 
         api.get("/api/admin/stats")
             .then((res) => {
-                if (mounted && res) {
+                if (mounted && res.data) {
                     setStats(res.data);
                 }
+
+                console.log("Fetched dashboard stats:", res.data);
 
                 if (!res.data) throw new Error("No data received");
             })
