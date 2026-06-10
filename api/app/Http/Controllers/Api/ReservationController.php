@@ -46,11 +46,23 @@ class ReservationController extends Controller
     }
 
     // GET detail reservation
-    public function show($id, Request $request)
+    public function show(Request $request)
     {
         $reservation = Reservation::with(['user', 'schedule.doctor', 'queue'])
             ->where('user_id', $request->user()->id)
-            ->findOrFail($id);
+            ->where('status', '!=', '')
+            ->whereHas('queue', function ($q) {
+                $q->where('status', 0)
+                    ->whereDate('created_at', Carbon::today());
+            })
+            ->latest()
+            ->first();
+
+        if (!$reservation) {
+            return response()->json([
+                'message' => 'Reservation not found'
+            ], 404);
+        }
 
         return new ReservationResource($reservation);
     }
@@ -151,9 +163,7 @@ class ReservationController extends Controller
         $reservation->update(['status' => 'approved']);
 
         $lastQueueNumber = Queue::where('poli_code', $policode)
-            ->whereHas('reservation.schedule', function ($q) use ($schedule) {
-                $q->where('date', $schedule->date);
-            })
+            ->whereDate('created_at', Carbon::today())
             ->max('queue_number');
 
         $nextNumber = ($lastQueueNumber ?? 0) + 1;
@@ -278,11 +288,30 @@ class ReservationController extends Controller
                 'rejected' => Reservation::where('status', 'rejected')->whereDate('created_at', Carbon::today())->count(),
                 'cancelled' => Reservation::where('status', 'cancelled')->whereDate('created_at', Carbon::today())->count(),
                 'today' => Reservation::whereDate('created_at', Carbon::today())->count(),
-                'monthly' => Reservation::whereMonth('created_at', Carbon::today()->month)->count(),
+                'monthly' => Reservation::whereBetween('created_at', [
+                    Carbon::today()->startOfMonth(),
+                    Carbon::today()->endOfMonth()
+                ])->count(),
                 'done' => Queue::where('status', '=', 1)->whereDate('created_at', Carbon::today())->count(),
                 'waiting' => Queue::where('status', '=', 0)->whereDate('created_at', Carbon::today())->count(),
                 'averageTime' => $avgTime,
                 'position' => $position
+            ],
+            200
+        );
+    }
+
+    public function basicStats(Request $request)
+    {
+        return ApiResponse::success(
+            'Statistik basic berhasil diambil',
+            [
+                'active' => Reservation::where('status', 'pending')->whereDate('created_at', Carbon::today())->count(),
+                'today' => Reservation::whereDate('created_at', Carbon::today())->count(),
+                'monthly' => Reservation::whereBetween('created_at', [
+                    Carbon::today()->startOfMonth(),
+                    Carbon::today()->endOfMonth()
+                ])->count(),
             ],
             200
         );

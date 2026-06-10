@@ -64,21 +64,6 @@ class QueueController extends Controller
             200
         );
     }
-
-    public function QueueDone($id)
-    {
-        $queue = Queue::findOrFail($id);
-        $queue->status = true;
-        $queue->served_at = now();
-        $queue->save();
-
-        return ApiResponse::success(
-            "Queue marked as done",
-            new QueueResource($queue),
-            200
-        );
-    }
-
     // COMPLETE queue -- Admin Only --
     public function completeQueue($id)
     {
@@ -90,6 +75,21 @@ class QueueController extends Controller
         return ApiResponse::success(
             "Queue marked as completed",
             new QueueResource($queue),
+            200
+        );
+    }
+
+    public function newQueue()
+    {
+        $queue = Queue::with(['reservation.user', 'reservation.schedule.doctor'])
+            ->whereDate('created_at', Carbon::today())
+            ->orderBy('created_at', 'DESC')
+            ->limit(3)
+            ->get();
+
+        return ApiResponse::success(
+            "New queues retrieved successfully",
+            QueueResource::collection($queue),
             200
         );
     }

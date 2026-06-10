@@ -16,7 +16,7 @@ export default function Queue() {
 
         console.log("Status Token saat useEffect berjalan:", token);
 
-        api.get("/api/admin/stats")
+        api.get("/api/stats")
             .then((res) => {
                 if (res.data) {
                     setStats(res.data);
@@ -29,7 +29,6 @@ export default function Queue() {
             });
 
         if (token) {
-            console.log("Token lolos pengecekan, mengirim request queue...");
             api.get("/api/queues", {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -50,8 +49,6 @@ export default function Queue() {
             return () => {
                 setIsMounted(false);
             };
-        } else {
-            console.log("Request queue dilewati karena token tidak ada.");
         }
     }, [token]);
 

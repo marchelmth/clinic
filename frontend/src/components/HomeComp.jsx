@@ -3,25 +3,27 @@ import Counting from "./HomeComp.jsx";
 import Header from "./Header.jsx";
 import Layout from "./Layout.jsx";
 import api from "../services/api.js";
+import { use } from "framer-motion/client";
 
 export default function Home() {
   const title = "Klinik Sehat | Beranda";
   const [counts, setCounts] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [queue, setQueue] = useState(null);
 
   useEffect(() => {
     let mounted = true;
 
-    api.get("/api/admin/stats")
+    api.get("/api/stats")
       .then((res) => {
         if (mounted && res.data) {
-          setStats(res.data);
+          setStats(res.data.data);
           setLoading(false);
         }
       })
       .catch((error) => {
-        console.error("Error fetching dashboard stats:", error);
+        console.error("Error fetching stats:", error);
         setLoading(false);
       });
 
@@ -47,6 +49,25 @@ export default function Home() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    api.get("/api/new-queue")
+      .then((res) => {
+        if (mounted && res.data.data) {
+          setQueue(res.data.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching new queues:", err);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
 
   return (
     <>
@@ -75,7 +96,7 @@ export default function Home() {
               <div>
                 <p className="text-muted small mb-1">Antrean Hari Ini</p>
                 {stats ? (
-                  <p>{stats.data.today ?? 0}</p>
+                  <p>{stats.today ?? 0}</p>
                 ) : (
                   <span className="text-muted">Loading...</span>
                 )}
@@ -93,7 +114,7 @@ export default function Home() {
               <div>
                 <p className="text-muted small mb-1">Antrean Aktif</p>
                 {stats ? (
-                  <p>{stats.data.active ?? 0}</p>
+                  <p>{stats.active ?? 0}</p>
                 ) : (
                   <span className="text-muted">Loading...</span>
                 )}
@@ -111,7 +132,7 @@ export default function Home() {
               <div>
                 <p className="text-muted small mb-1">Pasien Bulan ini</p>
                 {stats ? (
-                  <p>{stats.data.monthly ?? 0}</p>
+                  <p>{stats.monthly ?? 0}</p>
                 ) : (
                   <span className="text-muted">Loading...</span>
                 )}
@@ -165,13 +186,13 @@ export default function Home() {
             <div className="card-body text-center font-iosevka">
               <h5 className="card-title">ANTREAN TERBARU</h5>
               <hr />
-              {[1, 2, 3].map((number) => (
-                <div className={`card border-0 shadow-sm p-1 custom-card ${number > 1 ? "mt-2" : ""}`} key={number}>
+              {queue?.map((queues, index) => (
+                <div className={`card border-0 shadow-sm p-1 custom-card ${index > 0 ? "mt-2" : ""}`} key={queues.id}>
                   <div className="card-body d-flex text-center gap-3">
-                    <p className="ms-5">#{String(number).padStart(3, "0")}</p>
-                    <div className="ms-4">
-                      <p className="mb-0 fw-bold">Minda Musuma</p>
-                      <small className="text-muted">Jadwal: 09:00 - 09:30</small>
+                    <p className="ms-5">#{String(queues.queue_code).padStart(3, "0")}</p>
+                    <div className="ms-5">
+                      <p className="mb-0 fw-bold">{queues.user.name}</p>
+                      <small className="text-muted">Poli: {queues.schedule.doctor.specialization}</small>
                     </div>
                   </div>
                 </div>

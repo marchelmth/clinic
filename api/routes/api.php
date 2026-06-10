@@ -19,10 +19,10 @@ Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])
     ->middleware('signed')
     ->name('verification.verify');
 Route::get('/email/verify-status', [UserController::class, 'verifyStatusVerificationEmail']);
-Route::get('/admin/stats', [ReservationController::class, 'stats']);
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 
-
+Route::get('/stats', [ReservationController::class, 'basicStats']);
+Route::get('/new-queue', [QueueController::class, 'newQueue']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -34,10 +34,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reservations', [ReservationController::class, 'getAllReservations']);
     Route::get('/reservation', [ReservationController::class, 'index']);
     Route::post('/reservations', [ReservationController::class, 'store']);
-    Route::get('/reservations/{id}', [ReservationController::class, 'show']);
-    Route::post('/reservations/{id}/approve', [ReservationController::class, 'approve']);
-    Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject']);
+    Route::get('/reservation/user', [ReservationController::class, 'show']);
     Route::post('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
-    Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
-    Route::put('/queues/{id}/complete', [QueueController::class, 'completeQueue']);
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/admin/stats', [ReservationController::class, 'stats']);
+        Route::post('/reservations/{id}/approve', [ReservationController::class, 'approve']);
+        Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject']);
+        Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
+        Route::put('/queues/{id}/complete', [QueueController::class, 'completeQueue']);
+    });
 });
