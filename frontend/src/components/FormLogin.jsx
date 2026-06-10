@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
 import { a } from "framer-motion/client";
@@ -9,6 +9,8 @@ export default function FormLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [verifyEmailLink, setVerifyEmailLink] = useState("");
+  const [users, setUsers] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const token = localStorage.getItem("auth_token");
 
   const toggleShowPassword = () => {
@@ -74,26 +76,36 @@ export default function FormLogin() {
       }
 
       const token = data.data?.token;
+      const userRole = data.data?.user?.role; // Ambil role dari response login
 
       if (!token) {
         throw new Error("Akun belum terdaftar silakan daftar terlebih dahulu.");
       }
 
       localStorage.setItem("auth_token", token);
+      localStorage.setItem("role", userRole);
 
       setEmail("Please Wait...");
       setPassword("");
       showToast("success", "Successfully", "Login berhasil!");
 
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1100);
+      if (userRole === "admin") {
+        setTimeout(() => {
+          window.location.href = "/admin/dashboard";
+        });
+      } else {
+        setTimeout(() => {
+          window.location.href = "/";
+        });
+      }
     } catch (error) {
       showToast("error", "Error", error.message || "Terjadi kesalahan saat login.");
     } finally {
       setIsSubmitting(false);
     }
   }
+
+
 
   return (
     <>

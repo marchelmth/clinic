@@ -9,6 +9,8 @@ import VerifyEmail from "./pages/VerifyEmail.jsx";
 import WaitVerifyEmail from "./pages/WaitVerifyEmail.jsx";
 import Admin from "./pages/Admin.jsx";
 
+import AdminRoute from "../router/AdminRoute.jsx";
+
 const routes = {
   "/": Home,
   "/login": Login,
@@ -19,13 +21,12 @@ const routes = {
   "/signup": Signup,
   "/verify-email": VerifyEmail,
   "/wait-verify-email": WaitVerifyEmail,
-  "/admin/dashboard": Admin,
+  "/admin/dashboard": () => <AdminRoute><Admin /></AdminRoute>,
 };
 
 export default function App() {
   const pathname = window.location.pathname.replace(/\/$/, "") || "/";
   const routeKey = pathname.startsWith("/verify-email") ? "/verify-email" : pathname;
   const Page = routes[routeKey] || Home;
-
   return <Page />;
 }
