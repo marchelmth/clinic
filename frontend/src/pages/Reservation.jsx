@@ -11,7 +11,6 @@ export default function Reservation() {
           <div className="col-11 col-sm-8 col-md-6 col-lg-5 col-xl-4 ms-3">
             <div className="card border-1 rounded-4 shadow-sm">
               <div className="card-body p-3 p-md-4">
-                <h5 className="text-uppercase text-center mb-3">Buat Reservasi</h5>
                 <FormReservation />
               </div>
             </div>

@@ -115,6 +115,9 @@ export default function FormSignup() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+          <small className="text-muted">
+            Harap menggunakan email yang Aktif
+          </small>
         </div>
         <label className="form-label" htmlFor="password">
           Password
