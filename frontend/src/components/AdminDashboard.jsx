@@ -25,20 +25,26 @@ export default function AdminDashboard() {
     useEffect(() => {
         let mounted = true;
 
-        api.get("/api/admin/stats")
-            .then((res) => {
-                if (mounted && res.data) {
-                    setStats(res.data);
-                }
-
-                console.log("Fetched dashboard stats:", res.data);
-
-                if (!res.data) throw new Error("No data received");
+        if (token) {
+            api.get("/api/admin/stats", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             })
-            .catch((error) => {
-                console.error("Error fetching profile:", error);
-                showToast("error", "Gagal", "Gagal mengambil data profil.");
-            });
+                .then((res) => {
+                    if (mounted && res.data) {
+                        setStats(res.data.data);
+                    }
+
+                    console.log("Fetched dashboard stats:", res.data.data);
+
+                    if (!res.data.data) throw new Error("No data received");
+                })
+                .catch((error) => {
+                    console.error("Error fetching profile:", error);
+                    showToast("error", "Gagal", "Gagal mengambil data profil.");
+                });
+        }
 
         return () => {
             mounted = false;
@@ -178,7 +184,7 @@ export default function AdminDashboard() {
                     <ul>
                         <li>Total reservasi pending: {stats.pending}</li>
                         <li>Total reservasi hari ini: {stats.today}</li>
-                        <li>Total reservasi bulan ini: {stats.total}</li>
+                        <li>Total reservasi bulan ini: {stats.monthly}</li>
                     </ul>
                 </div>
             ) : (
@@ -188,87 +194,90 @@ export default function AdminDashboard() {
             {reservations.length > 0 ? (
                 <>
                     <h4>Reservations</h4>
-                    <table className="table table-bordered mt-3 text-center">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nama Pasien</th>
-                                <th>Keluhan</th>
-                                <th>Nama Dokter</th>
-                                <th>Spesialis</th>
-                                <th>Status</th>
-                                <th>Antrean Selesai</th>
-                                <th>Waktu Reservasi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {reservations.map((reservation) => {
-                                const isToday = isReservationToday(reservation);
-                                const isDisabled = !isToday;
+                    <div className="table-responsive">
+                        <table className="table table-bordered mt-3 text-center align-middle">
+                            <thead className="table-light">
+                                <tr className="text-nowrap">
+                                    <th>ID</th>
+                                    <th>Nama Pasien</th>
+                                    <th>Keluhan</th>
+                                    <th>Nama Dokter</th>
+                                    <th>Spesialis</th>
+                                    <th>Status</th>
+                                    <th>Selesai dilayani</th>
+                                    <th>Waktu Reservasi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {reservations.map((reservation) => {
+                                    const isToday = isReservationToday(reservation);
+                                    const isDisabled = !isToday;
 
-                                return (
-                                    <tr key={reservation.id} className={isDisabled ? "text-muted" : ""}>
-                                        <td>{reservation.id}</td>
-                                        <td>{reservation.user.name}</td>
-                                        <td>{reservation.keluhan}</td>
-                                        <td>dr. {reservation.schedule.doctor.name}</td>
-                                        <td>{reservation.schedule.doctor.specialization}</td>
-                                        <td>
-                                            <select
-                                                className={`form-select ${isDisabled ? "text-muted bg-body-secondary" : ""}`}
-                                                name="status"
-                                                id={`status-${reservation.id}`}
-                                                value={reservation.status}
-                                                onChange={(e) => handleStatusChange(reservation.id, e.target.value)}
-                                                disabled={isDisabled || reservation.status === "cancelled"}
-                                            >
-                                                <option value="pending" disabled hidden>Pending</option>
-                                                <option value="approved" disabled hidden>Approved</option>
-                                                <option value="rejected" disabled hidden>Rejected</option>
-                                                <option value="cancelled" disabled hidden>Cancelled</option>
-
-                                                {reservation.status === "pending" && (
-                                                    <>
-                                                        <option value="approve">Approve</option>
-                                                        <option value="reject">Reject</option>
-                                                        <option value="cancel">Cancel</option>
-                                                    </>
-                                                )}
-
-                                                {reservation.status === "approved" && (
-                                                    <option value="">Approved</option>
-                                                )}
-
-                                                {reservation.status === "rejected" && (
-                                                    <>
-                                                        <option value="approve">Approve</option>
-                                                        <option value="">Rejected</option>
-                                                    </>
-
-                                                )}
-                                            </select>
-                                        </td>
-                                        <td>{reservation.queue ? (
-                                            reservation.queue.status === 1 ? (
-                                                <span className={isDisabled ? "text-muted" : "badge bg-success"}>Done</span>
-                                            ) : (
-                                                <button
-                                                    className={`btn btn-sm ${isDisabled ? "btn-outline-secondary text-muted" : "btn-success"}`}
-                                                    onClick={() => handleCompleteQueue(reservation.queue.id)}
-                                                    disabled={isDisabled}
+                                    return (
+                                        <tr key={reservation.id} className={isDisabled ? "text-muted" : ""}>
+                                            <td className="text-nowrap">{reservation.id}</td>
+                                            <td className="text-nowrap">{reservation.user.name}</td>
+                                            <td>{reservation.keluhan}</td>
+                                            <td className="text-nowrap">dr. {reservation.schedule.doctor.name}</td>
+                                            <td className="text-nowrap">{reservation.schedule.doctor.specialization}</td>
+                                            <td>
+                                                <select
+                                                    className={`form-select ${isDisabled ? "text-muted bg-body-secondary" : ""}`}
+                                                    name="status"
+                                                    id={`status-${reservation.id}`}
+                                                    value={reservation.status}
+                                                    onChange={(e) => handleStatusChange(reservation.id, e.target.value)}
+                                                    disabled={isDisabled || reservation.status === "cancelled"}
+                                                    style={{ minWidth: "120px" }}
                                                 >
-                                                    Mark as Done
-                                                </button>
-                                            )
-                                        ) : (
-                                            <span className="text-muted">N/A</span>
-                                        )}</td>
-                                        <td>{timeFormatter(reservation.created_at)}</td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                                    <option value="pending" disabled hidden>Pending</option>
+                                                    <option value="approved" disabled hidden>Approved</option>
+                                                    <option value="rejected" disabled hidden>Rejected</option>
+                                                    <option value="cancelled" disabled hidden>Cancelled</option>
+
+                                                    {reservation.status === "pending" && (
+                                                        <>
+                                                            <option value="approve">Approve</option>
+                                                            <option value="reject">Reject</option>
+                                                            <option value="cancel">Cancel</option>
+                                                        </>
+                                                    )}
+
+                                                    {reservation.status === "approved" && (
+                                                        <option value="">Approved</option>
+                                                    )}
+
+                                                    {reservation.status === "rejected" && (
+                                                        <>
+                                                            <option value="approve">Approve</option>
+                                                            <option value="">Rejected</option>
+                                                        </>
+
+                                                    )}
+                                                </select>
+                                            </td>
+                                            <td className="text-nowrap">{reservation.queue ? (
+                                                reservation.queue.status === 1 ? (
+                                                    <span className={isDisabled ? "text-muted" : "badge bg-success"}>Done</span>
+                                                ) : (
+                                                    <button
+                                                        className={`btn btn-sm ${isDisabled ? "btn-outline-secondary text-muted" : "btn-success"}`}
+                                                        onClick={() => handleCompleteQueue(reservation.queue.id)}
+                                                        disabled={isDisabled}
+                                                    >
+                                                        Mark as Done
+                                                    </button>
+                                                )
+                                            ) : (
+                                                <span className="text-muted">N/A</span>
+                                            )}</td>
+                                            <td className="text-nowrap">{timeFormatter(reservation.created_at)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div className="d-flex justify-content-between align-items-center mt-3">
                         <button
