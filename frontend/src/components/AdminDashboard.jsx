@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
 import { timeFormatter } from "../../helper/DateTimeFormat.js";
+import { hr } from "framer-motion/client";
 
 const TIME_ZONE = "Asia/Makassar";
 const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -17,9 +18,11 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [queue, setQueue] = useState([]);
+    const [pagination, setPagination] = useState({
+        reservations: { currentPage: 1, totalPages: 1 },
+        queues: { currentPage: 1, totalPages: 1 },
+    });
     const token = localStorage.getItem("auth_token");
 
     useEffect(() => {
@@ -51,50 +54,110 @@ export default function AdminDashboard() {
         }
     }, []);
 
-    useEffect(() => {
-        let mounted = true;
-
-        if (token) {
-            setLoading(true);
-            api.get(`api/reservation?page=${currentPage}`, {
+    const fetchReservations = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await api.get(`api/reservation?page=${pagination.reservations.currentPage}`, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setReservations(res.data.data);
+            setPagination(prev => ({
+                ...prev,
+                reservations: {
+                    currentPage: res.data.meta.current_page,
+                    totalPages: res.data.meta.last_page,
+                }
+            }));
+            console.log("Reservation data:", res.data.data);
+        } catch (err) {
+            showToast("error", "gagal", "Gagal mengambil data reservasi.");
+        }
+    }, [token, pagination.reservations.currentPage]);
+
+    const fetchQueues = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await api.get(`api/queue?page=${pagination.queues.currentPage}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setQueue(res.data.data);
+            setPagination(prev => ({
+                ...prev,
+                queues: {
+                    currentPage: res.data.meta.current_page,
+                    totalPages: res.data.meta.last_page,
+                }
+            }));
+            console.log("Queue data:", res.data);
+        } catch (err) {
+            showToast("error", "gagal", "Gagal mengambil data queue.");
+        }
+    }, [token, pagination.queues.currentPage]);
+
+    useEffect(() => {
+        fetchReservations();
+        fetchQueues();
+    }, [fetchReservations, fetchQueues]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchReservations();
+            fetchQueues();
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [fetchReservations, fetchQueues]);
+
+    const handleNextPageReservation = () => {
+        if (pagination.reservations.currentPage < pagination.reservations.totalPages) {
+            setPagination({
+                ...pagination,
+                reservations: {
+                    ...pagination.reservations,
+                    currentPage: pagination.reservations.currentPage + 1,
                 },
+            });
+        }
+    };
+
+    const handlePrevPageReservation = () => {
+        if (pagination.reservations.currentPage > 1) {
+            setPagination({
+                ...pagination,
+                reservations: {
+                    ...pagination.reservations,
+                    currentPage: pagination.reservations.currentPage - 1,
+                },
+            });
+        }
+    };
+
+    const handleNextPageQueue = () => {
+        if (pagination.queues.currentPage < pagination.queues.totalPages) {
+            setPagination({
+                ...pagination,
+                queues: {
+                    ...pagination.queues,
+                    currentPage: pagination.queues.currentPage + 1,
+                }
             })
-                .then((res) => {
-                    if (mounted && res.data) {
-                        setReservations(res.data.data);
-                        setCurrentPage(res.data.meta.current_page);
-                        setTotalPages(res.data.meta.last_page);
-                        console.log("Reservations data:", res.data.data); // development only !!
-                    }
-
-                    if (!res.data.data) throw new Error("Error occured while fetching reservations");
-                })
-                .catch((error) => {
-                    console.error("Error fetching reservations:", error);
-                    showToast("error", "Gagal", "Gagal mengambil data reservasi.");
-                })
-                .finally(() => {
-                    if (mounted) setLoading(false);
-                });
-            return () => {
-                mounted = false;
-            };
         }
-    }, [token, currentPage]);
+    }
 
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
+    const handlePrevPageQueue = () => {
+        if (pagination.queues.currentPage > 1) {
+            setPagination({
+                ...pagination,
+                queues: {
+                    ...pagination.queues,
+                    currentPage: pagination.queues.currentPage - 1,
+                }
+            })
         }
-    };
-
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
+    }
 
     const handleStatusChange = async (reservationId, status) => {
         try {
@@ -178,6 +241,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="container py-2 font-iosevka">
+            <hr />
             {stats ? (
                 <div className="mt-4">
                     <h4>Statistics</h4>
@@ -191,6 +255,7 @@ export default function AdminDashboard() {
                 <p>Loading statistics...</p>
             )}
 
+            <hr />
             {reservations.length > 0 ? (
                 <>
                     <h4>Reservations</h4>
@@ -282,21 +347,75 @@ export default function AdminDashboard() {
                     <div className="d-flex justify-content-between align-items-center mt-3">
                         <button
                             className="btn btn-outline-primary"
-                            onClick={handlePrevPage}
-                            disabled={currentPage === 1}>
+                            onClick={handlePrevPageReservation}
+                            disabled={pagination.reservations.currentPage === 1}>
                             Previous
                         </button>
-                        <span>Page {currentPage} of {totalPages}</span>
+                        <span>Page {pagination.reservations.currentPage} of {pagination.reservations.totalPages}</span>
                         <button
                             className="btn btn-outline-primary"
-                            onClick={handleNextPage}
-                            disabled={currentPage === totalPages}>
+                            onClick={handleNextPageReservation}
+                            disabled={pagination.reservations.currentPage === pagination.reservations.totalPages}>
                             Next
                         </button>
                     </div>
                 </>
             ) : (
                 <p>No reservations found.</p>
+            )}
+            <hr />
+            <div className="mt-4">
+                <h4>Queue</h4>
+            </div>
+            {queue.length > 0 ? (
+                <>
+                    <div className="table-responsive">
+                        <table className="table table-bordered mt-3 text-center align-middle">
+                            <thead className="table-light">
+                                <tr className="text-nowrap">
+                                    <th>ID</th>
+                                    <th>Queue Code</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Called At</th>
+                                    <th>Served At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {queue.map((item) => {
+                                    return (
+                                        <tr key={item.id}>
+                                            <td className="text-nowrap">{item.id}</td>
+                                            <td className="text-nowrap">{item.queue_code}</td>
+                                            <td className="text-nowrap">{item.user.name}</td>
+                                            <td className="text-nowrap">{item.status === true ? "Done" : "Pending"}</td>
+                                            <td className="text-nowrap">{item.called_at === null ? "Not Called Yet" : timeFormatter(item.called_at)}</td>
+                                            <td className="text-nowrap">{item.served_at === null ? "Not Served Yet" : timeFormatter(item.served_at)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="d-flex justify-content-between align-items-center mt-3">
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handlePrevPageQueue}
+                            disabled={pagination.queues.currentPage === 1}>
+                            Previous
+                        </button>
+                        <span>Page {pagination.queues.currentPage} of {pagination.queues.totalPages}</span>
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handleNextPageQueue}
+                            disabled={pagination.queues.currentPage === pagination.queues.totalPages}>
+                            Next
+                        </button>
+                    </div>
+                </>
+            ) : (
+                <p>No Queue found.</p>
             )}
         </div>
     );
