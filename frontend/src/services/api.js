@@ -1,7 +1,9 @@
 import axios from "axios";
 import { showToast } from "../utils/toast";
 
-const apiBaseUrl = "http://localhost:3000";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+console.log("Base URL:", apiBaseUrl);
 
 const api = axios.create({
     baseURL: apiBaseUrl,
@@ -21,7 +23,7 @@ api.interceptors.response.use(
             localStorage.removeItem("auth_token");
 
             showToast("error", "Unauthorized", "Sesi Anda telah berakhir. Silakan login kembali.");
-            
+
             window.location.href = "/login";
         }
         return Promise.reject(error);
