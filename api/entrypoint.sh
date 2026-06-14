@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Menjalankan database migrations..."
+echo "Running database migrations..."
 php artisan migrate --force
 
-echo "Memulai server Laravel..."
+echo "Starting Laravel server..."
 exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}

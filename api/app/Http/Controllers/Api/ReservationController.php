@@ -18,6 +18,11 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponse::error("Unauthorized", 401);
+        }
+
         $query = Reservation::with(['user', 'schedule.doctor', 'queue']);
 
         if ($request->filled('status')) {
@@ -106,7 +111,7 @@ class ReservationController extends Controller
 
         if ($alreadyBooked) {
             return response()->json([
-                'message' => 'Anda sudah booking jadwal ini'
+                'message' => 'Anda sudah mendaftar jadwal ini'
             ], 400);
         }
 
@@ -306,12 +311,13 @@ class ReservationController extends Controller
         return ApiResponse::success(
             'Statistik basic berhasil diambil',
             [
-                'active' => Reservation::where('status', 'pending')->whereDate('created_at', Carbon::today())->count(),
+                'active' => Queue::where('status', 0)->whereDate('created_at', Carbon::today())->count(),
                 'today' => Reservation::whereDate('created_at', Carbon::today())->count(),
                 'monthly' => Reservation::whereBetween('created_at', [
                     Carbon::today()->startOfMonth(),
                     Carbon::today()->endOfMonth()
                 ])->count(),
+                'waiting' => Queue::where('status', 0)->whereDate('created_at', Carbon::today())->count(),
             ],
             200
         );

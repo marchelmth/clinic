@@ -94,7 +94,7 @@ export default function Home() {
           <div className="card h-100 border-0 shadow-sm p-3 custom-card">
             <div className="d-flex align-items-center justify-content-between">
               <div>
-                <p className="text-muted small mb-1">Antrean Hari Ini</p>
+                <p className="text-muted small mb-1">Reservasi Hari Ini</p>
                 {stats ? (
                   <p>{stats.today ?? 0}</p>
                 ) : (
@@ -186,17 +186,21 @@ export default function Home() {
             <div className="card-body text-center font-iosevka">
               <h5 className="card-title">ANTREAN TERBARU</h5>
               <hr />
-              {queue?.map((queues, index) => (
-                <div className={`card border-0 shadow-sm p-1 custom-card ${index > 0 ? "mt-2" : ""}`} key={queues.id}>
-                  <div className="card-body d-flex text-center gap-3">
-                    <p className="ms-5">#{String(queues.queue_code).padStart(3, "0")}</p>
-                    <div className="ms-5">
-                      <p className="mb-0 fw-bold">{queues.user.name}</p>
-                      <small className="text-muted">Poli: {queues.schedule.doctor.specialization}</small>
+              {queue?.length > 0 ? (
+                queue?.map((queues, index) => (
+                  <div className={`card border-0 shadow-sm p-1 custom-card ${index > 0 ? "mt-2" : ""}`} key={queues.id}>
+                    <div className="card-body d-flex text-center gap-3">
+                      <p className="ms-5">#{String(queues.queue_code).padStart(3, "0")}</p>
+                      <div className="ms-5">
+                        <p className="mb-0 fw-bold">{queues.user.name}</p>
+                        <small className="text-muted">Poli: {queues.schedule.doctor.specialization}</small>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="card-text p-5 fs-5">Belum ada antrean hari ini</p>
+              )}
             </div>
           </div>
         </div>
