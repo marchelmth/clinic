@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Membersihkan cache..."
+php artisan optimize:clear
+
 echo "Running database migrations..."
 php artisan migrate --force
 
