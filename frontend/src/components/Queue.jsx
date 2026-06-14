@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import trimValue from "../../helper/Trimming.js";
+import timeAgo from "../../helper/TimeAgo.js";
 
 
 export default function Queue() {
@@ -9,12 +10,29 @@ export default function Queue() {
     const [isLoading, setIsLoading] = useState(true);
     const [stats, setStats] = useState(null);
     const [queue, setQueue] = useState([]);
+    const [recentCall, setRecentCall] = useState(null);
+    const [currentQueue, setCurrentQueue] = useState([]); // Array to hold the poli queue stats
     const token = localStorage.getItem("auth_token");
 
     useEffect(() => {
         setIsMounted(true);
 
-        console.log("Status Token saat useEffect berjalan:", token);
+        api.get("/api/current-queue", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+            .then((res) => {
+                if (res.data) {
+                    setCurrentQueue(res.data.data);
+                    setIsLoading(false);
+                }
+                console.log("Fetched current queues:", res.data.data);
+            })
+            .catch((error) => {
+                console.error("Error di current queue code:", error);
+                setIsLoading(false);
+            });
 
         api.get("/api/stats")
             .then((res) => {
@@ -26,6 +44,18 @@ export default function Queue() {
             .catch((err) => {
                 console.error("Error di statistik admin:", err);
                 setIsLoading(false);
+            });
+
+        api.get("/api/new-queue")
+            .then((res) => {
+                console.log("Fetched recent call :", res.data.data);
+                if (res.data) {
+                    setRecentCall(res.data.data);
+                    setIsLoading(false);
+                }
+            })
+            .catch((error) => {
+                console.error("Error di recent call:", error);
             });
 
         if (token) {
@@ -73,22 +103,6 @@ export default function Queue() {
                                 <small className="d-block opacity-75 text-white">Dokter</small>
                                 <span className="fw-bold">{queue?.schedule?.doctor?.name || 'N/A'}</span>
                             </div>
-                            <div className="col-4 border-start border-light border-opacity-25">
-                                <small className="d-block opacity-75 text-white">Posisi Antrean</small>
-                                {stats ? (
-                                    <span className="fw-bold">{stats.data.position ?? 0}/{stats.data.today ?? 0}</span>
-                                ) : (
-                                    <span className="fw-bold">Loading...</span>
-                                )}
-                            </div>
-                            <div className="col-4 border-start border-light border-opacity-25">
-                                <small className="d-block opacity-75 text-white">Estimasi Waktu</small>
-                                {stats ? (
-                                    <span className="fw-bold">{trimValue(stats.data.averageTime) ?? '15'} menit</span>
-                                ) : (
-                                    <span className="fw-bold">Loading...</span>
-                                )}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -99,47 +113,45 @@ export default function Queue() {
                     <div className="card p-4 mb-4 shadow-sm">
                         <h5 className="fw-bold mb-4">Antrean Saat Ini</h5>
                         <div className="row g-3 mb-5">
-                            {[
-                                ["Poli Umum", "A-015", "8"],
-                                ["Poli Anak", "B-007", "5"],
-                            ].map(([name, currentNumber, waiting]) => (
-                                <div className="col-md-6" key={name}>
+                            {currentQueue.length > 0 ? currentQueue.map((item) => (
+                                <div className="col-md-6" key={item.name}>
                                     <div className="p-3 border rounded-4">
                                         <div className="d-flex justify-content-between align-items-center mb-3">
-                                            <span className="fw-bold">{name}</span>
+                                            <span className="fw-bold">{item.name}</span>
                                         </div>
                                         <div className="d-flex justify-content-between align-items-end">
                                             <div>
                                                 <small className="text-muted d-block small">Nomor Sekarang</small>
-                                                <h2 className="fw-bold mb-0">{currentNumber}</h2>
+                                                <h2 className="fw-bold mb-0">{item.current_number}</h2>
                                             </div>
                                             <div className="text-end">
                                                 <small className="text-muted d-block small">Menunggu</small>
-                                                <h4 className="fw-bold mb-0 text-secondary">{waiting}</h4>
+                                                <h4 className="fw-bold mb-0 text-secondary">{item.waiting}</h4>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            )) : (
+                                <p className="text-muted font-iosevka-light">Belum ada data antrean hari ini.</p>
+                            )}
                         </div>
 
                         <h5 className="fw-bold mb-3 mt-2">Panggilan Terakhir</h5>
-                        <div className="list-panggilan d-flex justify-content-between align-items-center border-start border-primary border-4 shadow-sm p-3 mb-2 rounded bg-light">
-                            <div>
-                                <span className="badge bg-primary text-white me-3 px-3 py-2">A-013</span> Poli Umum
-                            </div>
-                            <small className="text-muted">
-                                <i className="bi bi-clock me-1" /> 2 menit lalu
-                            </small>
-                        </div>
-                        <div className="list-panggilan d-flex justify-content-between align-items-center p-3 mb-2 rounded bg-light">
-                            <div>
-                                <span className="badge bg-secondary text-white me-3 px-3 py-2">B-006</span> Poli Anak
-                            </div>
-                            <small className="text-muted">
-                                <i className="bi bi-clock me-1" /> 5 menit lalu
-                            </small>
-                        </div>
+
+                        {recentCall?.length > 0 ? (
+                            recentCall?.map((item) => (
+                                <div className="list-panggilan d-flex justify-content-between align-items-center border-start border-primary border-2 shadow-sm p-3 mb-2 rounded bg-light">
+                                    <div>
+                                        <span className="badge bg-primary text-white me-3 px-3 py-2">{item.queue_code}</span>
+                                    </div>
+                                    <small className="text-muted">
+                                        <i className="bi bi-clock me-1" /> {timeAgo(item.called_at)}
+                                    </small>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-center font-iosevka-light text-muted">Belum ada panggilan terakhir</p>
+                        )}
                     </div>
                 </div>
 
@@ -184,15 +196,11 @@ export default function Queue() {
                                 <>
                                     <span>Sedang Menunggu</span>
                                     <span className="fw-bold text-danger">{stats.data.waiting ?? 0}</span>
+                                    {console.log(stats.data)}
                                 </>
                             ) : (
                                 <span>Loading...</span>
                             )}
-                        </div>
-                        <hr />
-                        <div className="d-flex justify-content-between align-items-center">
-                            <span className="small">Rata-rata Waktu</span>
-                            <span className="fw-bold text-primary">{trimValue(stats?.data?.averageTime) ?? '-'}</span>
                         </div>
                     </div>
                 </div>

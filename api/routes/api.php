@@ -26,6 +26,7 @@ Route::get('/new-queue', [QueueController::class, 'newQueue']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::get('/current-queue', [QueueController::class, 'currentQueueCode']);
     Route::get('/queues', [QueueController::class, 'show']);
     Route::get('/queue', [QueueController::class, 'index']);
     Route::get('/user', [UserController::class, 'profile']);
