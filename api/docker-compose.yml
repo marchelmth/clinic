@@ -14,6 +14,22 @@ services:
     depends_on:
       - db
 
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clinic_queue_worker
+    working_dir: /var/www
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    command: php artisan queue:work --tries=3 --timeout=90
+    restart: always
+    volumes:
+      - .:/var/www
+    depends_on:
+      - db
+
   db:
     image: mysql:8.0
     container_name: clinic_db
