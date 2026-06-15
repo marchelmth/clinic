@@ -256,9 +256,9 @@ export default function AdminDashboard() {
             )}
 
             <hr />
+            <h4>Reservations</h4>
             {reservations.length > 0 ? (
                 <>
-                    <h4>Reservations</h4>
                     <div className="table-responsive">
                         <table className="table table-bordered mt-3 text-center align-middle">
                             <thead className="table-light">
@@ -365,7 +365,7 @@ export default function AdminDashboard() {
             )}
             <hr />
             <div className="mt-4">
-                <h4>Queue</h4>
+                <h4>Queues</h4>
             </div>
             {queue.length > 0 ? (
                 <>

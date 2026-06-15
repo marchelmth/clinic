@@ -3,9 +3,22 @@ import Header from "../components/Header.jsx";
 import ProfileLayout from "../components/ProfileLayout.jsx";
 
 export default function Profile() {
+  const role = localStorage.getItem("role");
+
+  const handleBackClick = () => {
+    if (role === "admin") {
+      window.location.href = "/admin/dashboard";
+    } else {
+      window.location.href = "/";
+    }
+  };
   return (
     <Layout title="Klinik Sehat | Profile">
-      <Header page="Profile" className="sticky-top shadow-sm" />
+      {role === "admin" ? (
+        <button className="btn btn-sm text-white bg-secondary m-2" onClick={handleBackClick}>Kembali</button>
+      ) : (
+        <Header className="sticky-top shadow-sm" />
+      )}
       <main className="container py-5 font-iosevka">
         <ProfileLayout />
       </main>

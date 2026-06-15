@@ -1,9 +1,13 @@
 import axios from "axios";
 import { showToast } from "../utils/toast";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const isProduction = import.meta.env.VITE_ENVIRONMENT === "production";
 
-console.log("Base URL:", apiBaseUrl);
+const apiBaseUrl = isProduction ? import.meta.env.VITE_API_BASE_URL : import.meta.env.VITE_API_BASE_URL_DEVELOPMENT;
+
+console.log(import.meta.env);
+console.log(isProduction);
+console.log(apiBaseUrl);
 
 const api = axios.create({
     baseURL: apiBaseUrl,
