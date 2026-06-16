@@ -6,11 +6,7 @@ export default function Profile() {
   const role = localStorage.getItem("role");
 
   const handleBackClick = () => {
-    if (role === "admin") {
-      window.location.href = "/admin/dashboard";
-    } else {
-      window.location.href = "/";
-    }
+    window.history.back();
   };
   return (
     <Layout title="Klinik Sehat | Profile">

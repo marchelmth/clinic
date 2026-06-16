@@ -15,7 +15,7 @@ export default function WaitVerifyEmail() {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState(
         currentEmail
-            ? `Kami telah mengirimkan email verifikasi ke ${currentEmail}.`
+            ? `Kami telah mengirimkan email verifikasi ke ${currentEmail}`
             : "Email verifikasi belum ditemukan. Silakan kembali daftar atau kirim ulang verifikasi.",
     );
     useEffect(() => {
