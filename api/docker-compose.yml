@@ -23,7 +23,7 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    command: php artisan queue:work --tries=3 --timeout=90
+    entrypoint: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
     restart: always
     volumes:
       - .:/var/www

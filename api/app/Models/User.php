@@ -31,4 +31,9 @@ class User extends Authenticatable implements MustVerifyEmailContract
             'password' => 'hashed',
         ];
     }
+
+    public function sendEmailVerificationNotification()
+    {
+        \App\Jobs\SendVerifyEmailJob::dispatch($this);
+    }
 }
