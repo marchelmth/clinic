@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Schedule;
 use App\Models\Queue;
+use Error;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Http\Resources\ReservationResource;
@@ -64,9 +65,7 @@ class ReservationController extends Controller
             ->first();
 
         if (!$reservation) {
-            return response()->json([
-                'message' => 'Reservation not found'
-            ], 404);
+            return ApiResponse::success("Anda belum memiliki reservasi.", [], 200);
         }
 
         return new ReservationResource($reservation);
