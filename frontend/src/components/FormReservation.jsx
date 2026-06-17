@@ -31,8 +31,6 @@ export default function FormReservation() {
       .then((response) => {
         if (!mounted) return;
         setSelectedUser(response.data.data);
-        console.log("Data user:", response.data.data); // Tambahkan log untuk memeriksa data user
-        // if (response.data.data)
       })
       .catch((error) => {
         showToast("error", "error", error)
@@ -47,7 +45,6 @@ export default function FormReservation() {
         if (!mounted) return;
 
         const rawReservations = resDoctors.data?.data || [];
-        console.log("Data dokter dan jadwal:", resDoctors.data.data); // Tambahkan log untuk memeriksa data dokter dan jadwal
 
         if (rawReservations.length === 0) {
           setNoDoctors(true);
@@ -81,7 +78,6 @@ export default function FormReservation() {
     })
       .then((res) => {
         if (!mounted) return;
-        console.log("Data reservasi:", res.data.data); // Tambahkan log untuk memeriksa data reservasi
 
         if (!res.data.data) {
           setIsSubmitted(false);
