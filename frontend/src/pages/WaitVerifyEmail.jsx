@@ -49,7 +49,7 @@ export default function WaitVerifyEmail() {
                     setMessage("Email Anda telah diverifikasi. Silakan login.");
                 }
             } catch (error) {
-                console.error("Error memeriksa status verifikasi email:", error);
+                showToast("error", "error", error);
             }
         }
 

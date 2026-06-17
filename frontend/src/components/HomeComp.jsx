@@ -4,6 +4,7 @@ import Header from "./Header.jsx";
 import Layout from "./Layout.jsx";
 import api from "../services/api.js";
 import { use } from "framer-motion/client";
+import { showToast } from "../utils/toast.js";
 
 export default function Home() {
   const title = "Klinik Sehat | Beranda";
@@ -23,7 +24,7 @@ export default function Home() {
         }
       })
       .catch((error) => {
-        console.error("Error fetching stats:", error);
+        showToast("error", "error", error);
         setLoading(false);
       });
 
@@ -42,7 +43,7 @@ export default function Home() {
         }
       })
       .catch((err) => {
-        console.error("Error fetching Doctor available:", err);
+        showToast("error", "error", err);
       });
 
     return () => {
@@ -60,7 +61,7 @@ export default function Home() {
         }
       })
       .catch((err) => {
-        console.error("Error fetching new queues:", err);
+        showToast("error", "error", err);
       });
 
     return () => {

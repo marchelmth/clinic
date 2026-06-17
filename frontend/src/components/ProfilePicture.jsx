@@ -18,7 +18,7 @@ export default function ProfilePicture({ className = "", isProfile = false }) {
         setIsLoggedIn(true)
       })
       .catch((error) => {
-        console.error("Error fetching profile:", error);
+        showToast("error", "error", error);
         setIsLoggedIn(false);
       })
     setIsProfilePage(isProfile);

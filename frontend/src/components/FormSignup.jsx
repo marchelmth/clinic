@@ -57,7 +57,6 @@ export default function FormSignup() {
       const responseBody = await response.text();
       const data = responseBody ? JSON.parse(responseBody) : {};
 
-      console.log("Response from registration:", data);
       if (!response.ok) {
         if (typeof data === "object" && data !== null) {
           let errorMessage = "";

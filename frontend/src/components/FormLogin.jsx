@@ -70,8 +70,6 @@ export default function FormLogin() {
         const removeQuotes = (str) => str.replace(/^"(.*)"$/, "$1");
         const finalMessage = typeof rawMessage === "object" ? removeQuotes(JSON.stringify(rawMessage.email[0])) : rawMessage;
 
-        console.error("Login error:", finalMessage);
-
         throw new Error(finalMessage);
       }
 

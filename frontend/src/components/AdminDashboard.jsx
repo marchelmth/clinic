@@ -39,12 +39,9 @@ export default function AdminDashboard() {
                         setStats(res.data.data);
                     }
 
-                    console.log("Fetched dashboard stats:", res.data.data);
-
                     if (!res.data.data) throw new Error("No data received");
                 })
                 .catch((error) => {
-                    console.error("Error fetching profile:", error);
                     showToast("error", "Gagal", "Gagal mengambil data profil.");
                 });
         }
@@ -70,7 +67,6 @@ export default function AdminDashboard() {
                     totalPages: res.data.meta.last_page,
                 }
             }));
-            console.log("Reservation data:", res.data.data);
         } catch (err) {
             showToast("error", "gagal", "Gagal mengambil data reservasi.");
         }
@@ -92,7 +88,6 @@ export default function AdminDashboard() {
                     totalPages: res.data.meta.last_page,
                 }
             }));
-            console.log("Queue data:", res.data);
         } catch (err) {
             showToast("error", "gagal", "Gagal mengambil data queue.");
         }
@@ -191,8 +186,6 @@ export default function AdminDashboard() {
                             : reservation
                     )
                 );
-
-                console.log(res.data)
                 showToast("success", "Success", res.data.message);
 
             } else {
@@ -200,7 +193,6 @@ export default function AdminDashboard() {
             }
 
         } catch (error) {
-            console.error("Error changing status:", error);
             showToast("error", "Error", error.message || "Failed to change status.");
         }
     };
@@ -221,15 +213,12 @@ export default function AdminDashboard() {
                             : reservation
                     )
                 );
-
-                console.log(res.data)
                 showToast("success", "Success", res.data.message);
             } else {
                 throw new Error("No data received");
             }
 
         } catch (error) {
-            console.error("Error completing queue:", error);
             showToast("error", "Error", "Failed to complete queue.");
         }
     };

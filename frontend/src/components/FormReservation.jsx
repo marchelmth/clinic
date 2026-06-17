@@ -35,7 +35,7 @@ export default function FormReservation() {
         // if (response.data.data)
       })
       .catch((error) => {
-        console.error("Gagal mengambil data users", error);
+        showToast("error", "error", error)
       })
 
     api.get("/api/doctors", {
@@ -68,7 +68,7 @@ export default function FormReservation() {
         );
       })
       .catch((error) => {
-        console.error("Gagal mengambil data form reservasi:", error);
+        showToast("error", "error", error)
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -105,7 +105,7 @@ export default function FormReservation() {
         }
       })
       .catch((error) => {
-        console.error("Gagal mengambil data reservasi:", error);
+        showToast("error", "error", error)
       });
 
     return () => {
@@ -181,7 +181,6 @@ export default function FormReservation() {
       //   window.location.href = "/queue";
       // }, 900);
     } catch (error) {
-      console.error("Error:", error);
       showToast("error", "Error", error.message || "Terjadi kesalahan saat membuat reservasi.");
     } finally {
       setIsSubmitting(false);

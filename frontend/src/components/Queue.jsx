@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import trimValue from "../../helper/Trimming.js";
 import timeAgo from "../../helper/TimeAgo.js";
+import { showToast } from "../utils/toast.js";
 
 
 export default function Queue() {
@@ -27,10 +28,9 @@ export default function Queue() {
                     setCurrentQueue(res.data.data);
                     setIsLoading(false);
                 }
-                console.log("Fetched current queues:", res.data.data);
             })
             .catch((error) => {
-                console.error("Error di current queue code:", error);
+                showToast("error", "error", error);
                 setIsLoading(false);
             });
 
@@ -42,20 +42,19 @@ export default function Queue() {
                 }
             })
             .catch((err) => {
-                console.error("Error di statistik admin:", err);
+                showToast("error", "error", err);
                 setIsLoading(false);
             });
 
         api.get("/api/new-queue")
             .then((res) => {
-                console.log("Fetched recent call :", res.data.data);
                 if (res.data) {
                     setRecentCall(res.data.data);
                     setIsLoading(false);
                 }
             })
             .catch((error) => {
-                console.error("Error di recent call:", error);
+                showToast("error", "error", error);
             });
 
         if (token) {
@@ -69,7 +68,6 @@ export default function Queue() {
                         setQueue(response.data.data);
                         setIsLoading(false);
                     }
-                    console.log("Fetched queue :", response.data.data);
                 })
                 .catch((err) => {
                     console.error("Error di request queue:", err);
@@ -196,7 +194,6 @@ export default function Queue() {
                                 <>
                                     <span>Sedang Menunggu</span>
                                     <span className="fw-bold text-danger">{stats.data.waiting ?? 0}</span>
-                                    {console.log(stats.data)}
                                 </>
                             ) : (
                                 <span>Loading...</span>
