@@ -13,7 +13,7 @@ Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('schedules', ScheduleController::class);
 Route::get('/doctors/all', [DoctorController::class, 'GetAllDoctors']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/update-email', [AuthController::class, 'updateEmail']);
+Route::put('/update-email', [AuthController::class, 'updateEmail']);
 Route::post('/email/verification-notification', [UserController::class, 'resendVerificationEmail']);
 Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])
     ->middleware('signed')

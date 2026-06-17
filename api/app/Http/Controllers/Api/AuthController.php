@@ -74,7 +74,8 @@ class AuthController extends Controller
     public function updateEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|unique:users',
+            'old_email' => 'required|email|exists:users,email',
+            'new_email' => 'required|email|unique:users,email',
         ]);
 
         if ($validator->fails()) {
@@ -84,9 +85,9 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->old_email)->first();
 
-            $user->email = $request->email;
+            $user->email = $request->new_email;
 
             $user->save();
 

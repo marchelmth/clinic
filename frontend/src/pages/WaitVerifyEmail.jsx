@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header.jsx";
 import Layout from "../components/Layout.jsx";
 import api from "../services/api.js";
+import { showToast } from "../utils/toast.js";
 
 export default function WaitVerifyEmail() {
     const pendingEmail = useMemo(() => {
@@ -65,38 +66,65 @@ export default function WaitVerifyEmail() {
 
     const handleChangeEmail = async (e) => {
         e.preventDefault();
-        if (!newEmail || newEmail === currentEmail) return;
-
+        if (!newEmail) {
+            showToast("error", "Error", "Masukan email yang valid");
+            return;
+        }
         setIsLoading(true);
         try {
-            const response = await fetch(`${api.defaults.baseURL}/api/update-email`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({
-                    old_email: currentEmail,
-                    new_email: newEmail
-                }),
-            });
+            let response, data;
+            if (!currentEmail || currentEmail === newEmail) {
+                response = await fetch(`${api.defaults.baseURL}/api/email/verification-notification`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({ email: newEmail }),
+                });
+            } else {
+                response = await fetch(`${api.defaults.baseURL}/api/update-email`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({
+                        old_email: currentEmail,
+                        new_email: newEmail
+                    }),
+                });
+            }
 
-            const data = await response.json();
+            data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || "Gagal mengubah email");
+                let errorMsg = data.message || "Gagal memproses permintaan";
+                if (typeof data.message === "object") {
+                    if (data.message.new_email) errorMsg = data.message.new_email[0];
+                    else if (data.message.email) errorMsg = data.message.email[0];
+                    else if (data.message.old_email) errorMsg = data.message.old_email[0];
+                    else errorMsg = Object.values(data.message).flat().join(" ");
+                }
+                throw new Error(errorMsg);
             }
 
             localStorage.setItem("pending_verification_email", newEmail);
             setCurrentEmail(newEmail);
-            setMessage(`Email berhasil diperbarui! Kami telah mengirimkan email verifikasi baru ke ${newEmail}.`);
+            setMessage(`Email berhasil dikirim! Kami telah mengirimkan email verifikasi ke ${newEmail}.`);
             setIsEditing(false);
         } catch (error) {
-            alert(error.message);
+            showToast("error", "Error", error.message);
         } finally {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!currentEmail) {
+            setIsEditing(true);
+        }
+    }, [currentEmail]);
 
     return (
         <Layout title="Klinik Sehat | Verifikasi Email (Waiting for Verification)">
@@ -112,12 +140,12 @@ export default function WaitVerifyEmail() {
                                             <h3 className="mb-3">Tunggu Verifikasi Email</h3>
                                             <p className="text-muted mb-4">{message}</p>
                                             <hr className="border border-dark" />
-                                            <p className="text-dark">Salah mengisi email?</p>
+                                            <p className="text-dark">Belum menerima email verifikasi?</p>
                                             <button
                                                 onClick={() => { setIsEditing(true); setNewEmail(currentEmail); }}
                                                 className="btn btn-success w-100 text-white mb-2 border border-dark rounded-4"
                                             >
-                                                Ubah Alamat Email
+                                                Kirim Ulang / Ubah Email
                                             </button>
                                             <a href="/signup" className="btn btn-outline-secondary w-100 border border-dark rounded-4 text-dark">Kembali Daftar Baru</a>
                                         </>
@@ -125,7 +153,9 @@ export default function WaitVerifyEmail() {
                                     {!isConfirmed && isEditing && (
                                         <form onSubmit={handleChangeEmail}>
                                             <div className="mb-3 text-start">
-                                                <label className="form-label text-dark">Masukkan Email yang Benar:</label>
+                                                <label className="form-label text-dark">
+                                                    {currentEmail ? "Masukkan Email Anda:" : "Masukkan Email Anda untuk Verifikasi:"}
+                                                </label>
                                                 <input
                                                     type="email"
                                                     className="form-control"
@@ -136,16 +166,18 @@ export default function WaitVerifyEmail() {
                                                 />
                                             </div>
                                             <button type="submit" className="btn btn-success w-100 mb-2" disabled={isLoading}>
-                                                {isLoading ? "Menyimpan..." : "Simpan & Kirim Ulang"}
+                                                {isLoading ? "Memproses..." : "Kirim Ulang Email Verifikasi"}
                                             </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsEditing(false)}
-                                                className="btn btn-light w-100"
-                                                disabled={isLoading}
-                                            >
-                                                Batal
-                                            </button>
+                                            {currentEmail && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsEditing(false)}
+                                                    className="btn btn-light w-100"
+                                                    disabled={isLoading}
+                                                >
+                                                    Batal
+                                                </button>
+                                            )}
                                         </form>
                                     )}
 
