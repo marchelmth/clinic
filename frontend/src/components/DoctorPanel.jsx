@@ -52,7 +52,7 @@ export default function DoctorPanel() {
           <div className="col-md-6" key={doctor.id}>
             <div className="card p-4 h-100 shadow-sm">
               <div className="mb-0">
-                <h4 className="fw-bold mb-1">Dr. {doctor.name}</h4>
+                <h4 className="fw-bold mb-1">dr. {doctor.name}</h4>
                 <p className="text-primary mb-0">{doctor.specialization === "UMUM" ? "Dokter" : "Spesialis"} {doctor.specialization}</p>
               </div>
 
