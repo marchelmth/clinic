@@ -79,18 +79,17 @@ export default function FormReservation() {
       .then((res) => {
         if (!mounted) return;
 
-        if (!res.data.data) {
+        const reservation = res.data?.data;
+
+        if (!reservation || reservation.length === 0) {
           setIsSubmitted(false);
+          setIsConfirmed(false);
           return;
         }
 
-        if (res.data.data.queue.status !== 1) {
-          setIsSubmitted(true);
-        } else {
-          setIsSubmitted(false);
-        }
+        setIsSubmitted(reservation.queue?.status !== 0);
 
-        if (res.data.data.status === "approved") {
+        if (reservation.status === "approved") {
           setIsConfirmed(true);
           showToast("success", "Reservasi Dikonfirmasi", "Reservasi anda telah dikonfirmasi oleh admin, anda akan diarahkan ke halaman antrian.");
           setTimeout(() => {
@@ -101,7 +100,14 @@ export default function FormReservation() {
         }
       })
       .catch((error) => {
-        showToast("error", "error", error)
+        if (!mounted) return;
+
+        if (error.response && error.response.status === 404) {
+          setIsSubmitted(false);
+          setIsConfirmed(false);
+        } else {
+          showToast("error", "Error", error.response?.data?.message || "Terjadi kesalahan sistem");
+        }
       });
 
     return () => {
