@@ -9,9 +9,9 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\QueueController;
 
 Route::apiResource('users', UserController::class);
+Route::get('/doctors/all', [DoctorController::class, 'GetAllDoctors']);
 Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('schedules', ScheduleController::class);
-Route::get('/doctors/all', [DoctorController::class, 'GetAllDoctors']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::put('/update-email', [AuthController::class, 'updateEmail']);
 Route::post('/email/verification-notification', [UserController::class, 'resendVerificationEmail']);
@@ -44,5 +44,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reservations/{id}/reject', [ReservationController::class, 'reject']);
         Route::get('/admin/reservations', [ReservationController::class, 'adminIndex']);
         Route::put('/queues/{id}/complete', [QueueController::class, 'completeQueue']);
+        Route::delete('/schedule/{id}', [ScheduleController::class, 'destroy']);
     });
 });

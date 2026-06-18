@@ -52,7 +52,7 @@ class DoctorController extends Controller
         })->values();
 
         if ($doctors->isEmpty()) {
-            return ApiResponse::success("No doctors found for today", $doctors ,200);
+            return ApiResponse::success("No doctors found for today", $doctors, 200);
         }
 
         return ApiResponse::success("Doctors retrieved successfully", $doctors, 200);
@@ -122,5 +122,14 @@ class DoctorController extends Controller
             return ApiResponse::error("Failed to delete doctor", 500);
         }
         return ApiResponse::success("Doctor deleted successfully", $doctor->only('name'), 200);
+    }
+    public function GetAllDoctors()
+    {
+        $doctors = Doctor::all();
+        if ($doctors->isEmpty()) {
+            return ApiResponse::success('No doctors found', [], 200);
+        }
+
+        return ApiResponse::success("Doctors retrieved successfully", $doctors, 200);
     }
 }
