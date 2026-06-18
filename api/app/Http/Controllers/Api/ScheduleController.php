@@ -7,20 +7,38 @@ use App\Models\Schedule;
 use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\ScheduleResource;
 
 class ScheduleController extends Controller
 {
-    public function index()
-    {   
-        $schedules = Schedule::with('doctor')->get();
-        if ($schedules->isEmpty()) {
-            return ApiResponse::error("No schedules found", 404);
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return ApiResponse::error("Unauthorized", 401);
         }
-        return ApiResponse::success("Schedules retrieved successfully", $schedules, 200);
+
+        $query = Schedule::with(['doctor']);
+
+        $schedules = $query->paginate(5);
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Schedules retrieved successfully',
+            'data' => ScheduleResource::collection($schedules),
+            'meta' => [
+                'current_page' => $schedules->currentPage(),
+                'last_page' => $schedules->lastPage(),
+                'total' => $schedules->total(),
+                'per_page' => $schedules->perPage(),
+            ]
+        ], 200);
     }
 
     public function store(Request $request)
-    {   
+    {
         $validator = Validator::make($request->all(), [
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|string',

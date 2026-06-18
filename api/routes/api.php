@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\QueueController;
 
 Route::apiResource('users', UserController::class);
 Route::apiResource('doctors', DoctorController::class);
-Route::apiResource('schedules', ScheduleController::class);
 Route::get('/doctors/all', [DoctorController::class, 'GetAllDoctors']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::put('/update-email', [AuthController::class, 'updateEmail']);
@@ -26,6 +25,7 @@ Route::get('/new-queue', [QueueController::class, 'newQueue']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::apiResource('schedules', ScheduleController::class);
     Route::get('/current-queue', [QueueController::class, 'currentQueueCode']);
     Route::get('/queues', [QueueController::class, 'show']);
     Route::get('/queue', [QueueController::class, 'index']);
