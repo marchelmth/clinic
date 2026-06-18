@@ -14,6 +14,7 @@ export default function Dashboard() {
             <div className="container pb-5 font-iosevka">
                 <h2>Admin Dashboard</h2>
                 <p>Welcome to the admin dashboard. Here you can manage doctors, appointments, and view statistics.</p>
+                <hr />
                 <AdminDashboard />
             </div>
         </Layout>
