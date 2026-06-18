@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { showToast } from "../utils/toast.js";
 
 export default function ProfilePicture({ className = "", isProfile = false }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

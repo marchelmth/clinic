@@ -46,22 +46,26 @@ export default function ToastListener() {
           const palette = alertPalettes[toast.status] || "gray";
 
           return (
-          <Alert.Root
-            key={toast.id}
-            status={toast.status}
-            bg={`${palette}.focusRing`}
-            borderColor={`${palette}.subtle`}
-            borderWidth="2px"
-            color={`${palette}.contrast`}
+            <Alert.Root
+              key={toast.id}
+              status={toast.status}
+              bg={`${palette}.focusRing`}
+              borderColor={`${palette}.subtle`}
+              borderWidth="2px"
+              color={`${palette}.contrast`}
             >
-            <Alert.Indicator color={`${palette}.muted`} />
-            <Box>
-              <Alert.Title>{toast.title}</Alert.Title>
-              {toast.description && (
-                <Alert.Description>{toast.description}</Alert.Description>
-              )}
-            </Box>
-          </Alert.Root>
+              <Alert.Indicator color={`${palette}.muted`} />
+              <Box>
+                <Alert.Title>{toast.title}</Alert.Title>
+                {toast.description && (
+                  <Alert.Description>
+                    {typeof toast.description === 'object'
+                      ? toast.description.message || JSON.stringify(toast.description)
+                      : toast.description}
+                  </Alert.Description>
+                )}
+              </Box>
+            </Alert.Root>
           );
         })}
       </Stack>
