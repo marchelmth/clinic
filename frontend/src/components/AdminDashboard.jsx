@@ -265,7 +265,7 @@ export default function AdminDashboard() {
             <Tabs
                 label1="Reservations"
                 label2="Queues"
-                label3="Schedule"
+                label3="Schedule" // UNDER DEVELOPMENT !
                 label4="Doctors" //UNDER DEVELOPMENT !
                 label5="Users" //UNDER DEVELOPMENT !
                 children1={
