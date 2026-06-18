@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import api from "../services/api.js";
 import { showToast } from "../utils/toast.js";
 import { timeFormatter } from "../../helper/DateTimeFormat.js";
-import { hr } from "framer-motion/client";
 import Tabs from "./Tabs.jsx";
 
 const TIME_ZONE = "Asia/Makassar";
@@ -443,7 +442,7 @@ export default function AdminDashboard() {
                     <div className="mt-1">
                         <h4>Schedules</h4>
                     </div>
-                    {schedule.length > 0 ? (
+                    {schedules.length > 0 ? (
                         <>
                             <div className="table-responsive">
                                 <table className="table table-bordered mt-3 text-center align-middle">
