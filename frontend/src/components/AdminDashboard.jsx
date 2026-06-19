@@ -23,8 +23,18 @@ export default function AdminDashboard() {
     const [queue, setQueue] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [showScheduleForm, setShowScheduleForm] = useState(false);
+    const [showDoctorForm, setShowDoctorForm] = useState(false);
     const [showEditScheduleForm, setShowEditScheduleForm] = useState(false);
     const [doctors, setDoctors] = useState([]);
+    const [newDoctor, setNewDoctor] = useState({
+        name: "",
+        email: "",
+        password: "",
+        specialization: "",
+        phone: "",
+        status: "",
+        room: ""
+    });
     const [newSchedule, setNewSchedule] = useState({
         doctor_id: "",
         date: "",
@@ -33,6 +43,7 @@ export default function AdminDashboard() {
         quota: ""
     });
     const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
+    const [isSubmittingDoctor, setIsSubmittingDoctor] = useState(false);
     const [isEditingSchedule, setIsEditingSchedule] = useState(false);
     const [editedSchedule, setEditedSchedule] = useState(null);
     const [pagination, setPagination] = useState({
@@ -349,6 +360,31 @@ export default function AdminDashboard() {
             showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create schedule.");
         } finally {
             setIsSubmittingSchedule(false);
+        }
+    }
+
+    const handleCreateDoctors = async (e) => {
+        e.preventDefault();
+        setIsSubmittingDoctor(true);
+        try {
+            const res = await api.post('/api/doctors', newDoctor, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "Schedule created successfully");
+                setShowDoctorForm(false);
+                fetchDoctors(); // Refresh table
+                setNewDoctor({ name: "", email: "", specialization: "", phone: "", status: "", room: "" }); // Reset form
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create schedule.");
+        } finally {
+            setIsSubmittingDoctor(false);
         }
     }
 
@@ -828,7 +864,22 @@ export default function AdminDashboard() {
                 }
                 children4={
                     <div className="mt-1">
-                        <h4>Doctors</h4>
+                        <div className="mt-1 d-flex justify-content-between align-items-center">
+                            <h4 className="me-2">Doctors</h4>
+                            <small className="text-secondary">UNDER DEVELOPMENT !</small>
+
+                            <button
+                                className={`btn ${showDoctorForm ? 'btn-secondary' : 'btn-success'}`}
+                                onClick={() => {
+                                    setShowDoctorForm(!showDoctorForm);
+                                    // setShowEditScheduleForm(false);
+                                }}
+                            >
+                                {showDoctorForm ? 'Batal' : 'Create Doctor'}
+                            </button>
+
+                        </div>
+
                         {doctors ? (
                             <>
                                 <div className="table-responsive">
