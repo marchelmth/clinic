@@ -32,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::get('/reservations', [ReservationController::class, 'getAllReservations']);
+    // Route::get('/reservations', [ReservationController::class, 'getAllReservations']);
     Route::get('/reservation', [ReservationController::class, 'index']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::get('/reservation/user', [ReservationController::class, 'show']);

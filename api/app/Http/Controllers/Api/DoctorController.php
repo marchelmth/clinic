@@ -23,7 +23,8 @@ class DoctorController extends Controller
             'Minggu' => 7
         ];
 
-        $todayNumber = Carbon::now()->dayOfWeekIso;
+        $timezone = 'Asia/Makassar';
+        $todayNumber = Carbon::now($timezone)->dayOfWeekIso;
 
         $doctors = Doctor::with('schedules')->get()->filter(function ($doctor) use ($daysMap, $todayNumber) {
             $hasScheduleToday = false;
