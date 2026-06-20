@@ -57,8 +57,8 @@ export default function FormLogin() {
             "error",
             "Error",
             <span>
-              Email Belum diverifikasi.{" "}
-              <a href="/verify-email" style={{ color: "#fff", textDecoration: "underline" }}>
+              Email belum diverifikasi.{" "}
+              <a href="/wait-verify-email" style={{ color: "#fff", textDecoration: "underline" }}>
                 Kirim ulang email verifikasi.
               </a>
             </span>
@@ -66,12 +66,16 @@ export default function FormLogin() {
           return;
         }
 
+
+
         let rawMessage = data.message || `Request gagal dengan status ${response.status}`;
         const removeQuotes = (str) => str.replace(/^"(.*)"$/, "$1");
         const finalMessage = typeof rawMessage === "object" ? removeQuotes(JSON.stringify(rawMessage.email[0])) : rawMessage;
 
         throw new Error(finalMessage);
       }
+
+      console.log(response.status);
 
       const token = data.data?.token;
       const userRole = data.data?.user?.role; // Ambil role dari response login

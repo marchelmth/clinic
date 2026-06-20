@@ -1,5 +1,5 @@
 import { Alert, Box, Stack } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, isValidElement } from "react";
 
 const alertPalettes = {
   error: "red",
@@ -59,9 +59,11 @@ export default function ToastListener() {
                 <Alert.Title>{toast.title}</Alert.Title>
                 {toast.description && (
                   <Alert.Description>
-                    {typeof toast.description === 'object'
-                      ? toast.description.message || JSON.stringify(toast.description)
-                      : toast.description}
+                    {isValidElement(toast.description)
+                      ? toast.description
+                      : typeof toast.description === 'object'
+                        ? toast.description.message || JSON.stringify(toast.description)
+                        : toast.description}
                   </Alert.Description>
                 )}
               </Box>
