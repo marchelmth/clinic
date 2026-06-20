@@ -25,7 +25,13 @@ class AppServiceProvider extends ServiceProvider
             $parts = parse_url($url);
             $path = $parts['path'] ?? '';
             $query = isset($parts['query']) ? '?' . $parts['query'] : '';
-            $frontendUrl = rtrim(env('FRONTEND_URL', 'http://localhost:5173'), '/');
+            $env = env('APP_ENV');
+
+            if ($env === "development") {
+                $frontendUrl = rtrim("http://localhost:5173", '/');
+            } else {
+                $frontendUrl = rtrim(env('FRONTEND_URL'), '/');
+            }
 
             if (preg_match('#/email/verify/([^/]+)/([^/]+)#', $path, $matches)) {
                 $url = "{$frontendUrl}/verify-email/{$matches[1]}/{$matches[2]}{$query}";
