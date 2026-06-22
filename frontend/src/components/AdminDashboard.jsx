@@ -129,7 +129,6 @@ export default function AdminDashboard() {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log(res.data)
             setSchedules(res.data.data);
             setPagination(prev => ({
                 ...prev,
