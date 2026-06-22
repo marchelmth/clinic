@@ -23,8 +23,18 @@ export default function AdminDashboard() {
     const [queue, setQueue] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [showScheduleForm, setShowScheduleForm] = useState(false);
+    const [showDoctorForm, setShowDoctorForm] = useState(false);
     const [showEditScheduleForm, setShowEditScheduleForm] = useState(false);
     const [doctors, setDoctors] = useState([]);
+    const [newDoctor, setNewDoctor] = useState({
+        name: "",
+        email: "",
+        password: "",
+        specialization: "",
+        phone: "",
+        status: "",
+        room: ""
+    });
     const [newSchedule, setNewSchedule] = useState({
         doctor_id: "",
         date: "",
@@ -33,12 +43,14 @@ export default function AdminDashboard() {
         quota: ""
     });
     const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
+    const [isSubmittingDoctor, setIsSubmittingDoctor] = useState(false);
     const [isEditingSchedule, setIsEditingSchedule] = useState(false);
     const [editedSchedule, setEditedSchedule] = useState(null);
     const [pagination, setPagination] = useState({
         reservations: { currentPage: 1, totalPages: 1 },
         queues: { currentPage: 1, totalPages: 1 },
         schedules: { currentPage: 1, totalPages: 1 },
+        doctors: { currentPage: 1, totalPages: 1 },
     });
     const token = localStorage.getItem("auth_token");
 
@@ -112,7 +124,11 @@ export default function AdminDashboard() {
 
     const fetchSchedules = useCallback(async () => {
         try {
-            const res = await api.get(`api/schedules?page=${pagination.schedules.currentPage}`);
+            const res = await api.get(`api/schedules?page=${pagination.schedules.currentPage}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             console.log(res.data)
             setSchedules(res.data.data);
             setPagination(prev => ({
@@ -125,7 +141,7 @@ export default function AdminDashboard() {
         } catch (err) {
             showToast("error", "gagal", "Gagal mengambil data schedule.");
         }
-    }, [pagination.schedules.currentPage]);
+    }, [token, pagination.schedules.currentPage]);
 
     const fetchDoctor = useCallback(async () => {
         try {
@@ -229,6 +245,30 @@ export default function AdminDashboard() {
         }
     }
 
+    const handleNextPageDoctor = () => {
+        if (pagination.doctors.currentPage < pagination.doctors.totalPages) {
+            setPagination({
+                ...pagination,
+                doctors: {
+                    ...pagination.doctors,
+                    currentPage: pagination.doctors.currentPage + 1,
+                }
+            })
+        }
+    }
+
+    const handlePrevPageDoctor = () => {
+        if (pagination.doctors.currentPage > 1) {
+            setPagination({
+                ...pagination,
+                doctors: {
+                    ...pagination.doctors,
+                    currentPage: pagination.doctors.currentPage - 1,
+                }
+            })
+        }
+    }
+
     const handleStatusChange = async (reservationId, status) => {
         try {
             let endpoint = "";
@@ -320,6 +360,31 @@ export default function AdminDashboard() {
             showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create schedule.");
         } finally {
             setIsSubmittingSchedule(false);
+        }
+    }
+
+    const handleCreateDoctors = async (e) => {
+        e.preventDefault();
+        setIsSubmittingDoctor(true);
+        try {
+            const res = await api.post('/api/doctors', newDoctor, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "Schedule created successfully");
+                setShowDoctorForm(false);
+                fetchDoctors(); // Refresh table
+                setNewDoctor({ name: "", email: "", specialization: "", phone: "", status: "", room: "" }); // Reset form
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create schedule.");
+        } finally {
+            setIsSubmittingDoctor(false);
         }
     }
 
@@ -799,8 +864,73 @@ export default function AdminDashboard() {
                 }
                 children4={
                     <div className="mt-1">
-                        <h4>Doctors</h4>
-                        <p className="text-muted">Doctors Page is under development !</p>
+                        <div className="mt-1 d-flex justify-content-between align-items-center">
+                            <h4 className="me-2">Doctors</h4>
+                            <small className="text-secondary">UNDER DEVELOPMENT !</small>
+
+                            <button
+                                className={`btn ${showDoctorForm ? 'btn-secondary' : 'btn-success'}`}
+                                onClick={() => {
+                                    setShowDoctorForm(!showDoctorForm);
+                                    // setShowEditScheduleForm(false);
+                                }}
+                            >
+                                {showDoctorForm ? 'Batal' : 'Create Doctor'}
+                            </button>
+
+                        </div>
+
+                        {doctors ? (
+                            <>
+                                <div className="table-responsive">
+                                    <table className="table table-bordered mt-3 text-center align-middle">
+                                        <thead className="table-light">
+                                            <tr className="text-nowrap">
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Specialization</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {doctors.map((item) => {
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td className="text-nowrap">{item.id}</td>
+                                                        <td className="text-nowrap">{item.name}</td>
+                                                        <td className="text-nowrap">{item.specialization}</td>
+                                                        <td className="text-nowrap">{item.status}</td>
+                                                        <td>
+                                                            <button className="btn btn-danger btn-sm w-25" onClick={() => handleDeleteDoctor(item.id)}>Delete</button>
+                                                            <button className="btn btn-warning btn-sm w-25 ms-2" onClick={() => handleEditDoctor(item)}>Edit</button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="d-flex justify-content-between align-items-center mt-3">
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        onClick={handlePrevPageDoctor}
+                                        disabled={pagination.doctors.currentPage === 1}>
+                                        Previous
+                                    </button>
+                                    <span>Page {pagination.doctors.currentPage} of {pagination.doctors.totalPages}</span>
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        onClick={handleNextPageDoctor}
+                                        disabled={pagination.doctors.currentPage === pagination.doctors.totalPages}>
+                                        Next
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <p>No Doctors found.</p>
+                        )}
                     </div>
                 }
                 children5={

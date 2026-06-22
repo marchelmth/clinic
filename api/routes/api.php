@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\QueueController;
 Route::apiResource('users', UserController::class);
 Route::get('/doctors/all', [DoctorController::class, 'GetAllDoctors']);
 Route::apiResource('doctors', DoctorController::class);
-Route::apiResource('schedules', ScheduleController::class);
 Route::post('/register', [AuthController::class, 'register']);
 Route::put('/update-email', [AuthController::class, 'updateEmail']);
 Route::post('/email/verification-notification', [UserController::class, 'resendVerificationEmail']);
@@ -26,13 +25,14 @@ Route::get('/new-queue', [QueueController::class, 'newQueue']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::apiResource('schedules', ScheduleController::class);
     Route::get('/current-queue', [QueueController::class, 'currentQueueCode']);
     Route::get('/queues', [QueueController::class, 'show']);
     Route::get('/queue', [QueueController::class, 'index']);
     Route::get('/user', [UserController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::get('/reservations', [ReservationController::class, 'getAllReservations']);
+    // Route::get('/reservations', [ReservationController::class, 'getAllReservations']);
     Route::get('/reservation', [ReservationController::class, 'index']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::get('/reservation/user', [ReservationController::class, 'show']);

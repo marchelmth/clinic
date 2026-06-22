@@ -11,15 +11,17 @@ use App\Http\Resources\ScheduleResource;
 
 class ScheduleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Schedule::with('doctor');
+        $user = $request->user();
+
+        if (!$user) {
+            return ApiResponse::error("Unauthorized", 401);
+        }
+
+        $query = Schedule::with(['doctor']);
 
         $schedules = $query->paginate(5);
-
-        if ($schedules->isEmpty()) {
-            return ApiResponse::success('No schedules found', [], 200);
-        }
 
         return response()->json([
             'status' => 'success',
