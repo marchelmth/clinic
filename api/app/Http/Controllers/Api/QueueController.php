@@ -60,7 +60,7 @@ class QueueController extends Controller
             ->first();
 
         if (!$queue) {
-            return ApiResponse::error("Anda tidak memiliki antrean aktif hari ini", 404);
+            return ApiResponse::success("Anda tidak memiliki antrean aktif hari ini", [], 200);
         }
 
         return ApiResponse::success(

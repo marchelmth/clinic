@@ -83,7 +83,8 @@ class UserController extends Controller
                 'email',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'password' => 'nullable|string|min:8'
+            'password' => 'nullable|string|min:8',
+            'role' => 'nullable|string|in:admin,user'
         ]);
 
         if ($validator->fails()) {

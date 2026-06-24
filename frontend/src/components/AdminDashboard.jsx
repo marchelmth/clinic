@@ -25,7 +25,11 @@ export default function AdminDashboard() {
     const [showScheduleForm, setShowScheduleForm] = useState(false);
     const [showDoctorForm, setShowDoctorForm] = useState(false);
     const [showEditScheduleForm, setShowEditScheduleForm] = useState(false);
+    const [showEditDoctorForm, setShowEditDoctorForm] = useState(false);
+    const [showUserForm, setShowUserForm] = useState(false);
+    const [showEditUserForm, setShowEditUserForm] = useState(false);
     const [doctors, setDoctors] = useState([]);
+    const [users, setUsers] = useState([]);
     const [newDoctor, setNewDoctor] = useState({
         name: "",
         email: "",
@@ -34,6 +38,12 @@ export default function AdminDashboard() {
         phone: "",
         status: "",
         room: ""
+    });
+    const [newUser, setNewUser] = useState({
+        name: "",
+        email: "",
+        password: "",
+        role: "user"
     });
     const [newSchedule, setNewSchedule] = useState({
         doctor_id: "",
@@ -44,13 +54,19 @@ export default function AdminDashboard() {
     });
     const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
     const [isSubmittingDoctor, setIsSubmittingDoctor] = useState(false);
+    const [isSubmittingUser, setIsSubmittingUser] = useState(false);
     const [isEditingSchedule, setIsEditingSchedule] = useState(false);
+    const [isEditingDoctor, setIsEditingDoctor] = useState(false);
+    const [isEditingUser, setIsEditingUser] = useState(false);
     const [editedSchedule, setEditedSchedule] = useState(null);
+    const [editedDoctor, setEditedDoctor] = useState(null);
+    const [editedUser, setEditedUser] = useState(null);
     const [pagination, setPagination] = useState({
         reservations: { currentPage: 1, totalPages: 1 },
         queues: { currentPage: 1, totalPages: 1 },
         schedules: { currentPage: 1, totalPages: 1 },
         doctors: { currentPage: 1, totalPages: 1 },
+        users: { currentPage: 1, totalPages: 1 },
     });
     const token = localStorage.getItem("auth_token");
 
@@ -155,12 +171,26 @@ export default function AdminDashboard() {
         }
     }, [token]);
 
+    const fetchUsers = useCallback(async () => {
+        try {
+            const res = await api.get(`api/users`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setUsers(res.data.data || []);
+        } catch (err) {
+            showToast("error", "gagal", "Gagal mengambil data users.");
+        }
+    }, [token]);
+
     useEffect(() => {
         fetchReservations();
         fetchQueues();
         fetchSchedules();
         fetchDoctor();
-    }, [fetchReservations, fetchQueues, fetchSchedules, fetchDoctor]);
+        fetchUsers();
+    }, [fetchReservations, fetchQueues, fetchSchedules, fetchDoctor, fetchUsers]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -168,9 +198,10 @@ export default function AdminDashboard() {
             fetchQueues();
             fetchSchedules();
             fetchDoctor();
+            fetchUsers();
         }, 15000);
         return () => clearInterval(interval);
-    }, [fetchReservations, fetchQueues, fetchSchedules, fetchDoctor]);
+    }, [fetchReservations, fetchQueues, fetchSchedules, fetchDoctor, fetchUsers]);
 
     const handleNextPageReservation = () => {
         if (pagination.reservations.currentPage < pagination.reservations.totalPages) {
@@ -263,6 +294,30 @@ export default function AdminDashboard() {
                 doctors: {
                     ...pagination.doctors,
                     currentPage: pagination.doctors.currentPage - 1,
+                }
+            })
+        }
+    }
+
+    const handleNextPageUser = () => {
+        if (pagination.users.currentPage < pagination.users.totalPages) {
+            setPagination({
+                ...pagination,
+                users: {
+                    ...pagination.users,
+                    currentPage: pagination.users.currentPage + 1,
+                }
+            })
+        }
+    }
+
+    const handlePrevPageUser = () => {
+        if (pagination.users.currentPage > 1) {
+            setPagination({
+                ...pagination,
+                users: {
+                    ...pagination.users,
+                    currentPage: pagination.users.currentPage - 1,
                 }
             })
         }
@@ -373,15 +428,15 @@ export default function AdminDashboard() {
             });
 
             if (res.data) {
-                showToast("success", "Success", res.data.message || "Schedule created successfully");
+                showToast("success", "Success", res.data.message || "Doctor created successfully");
                 setShowDoctorForm(false);
-                fetchDoctors(); // Refresh table
+                fetchDoctor(); // Refresh table
                 setNewDoctor({ name: "", email: "", specialization: "", phone: "", status: "", room: "" }); // Reset form
             } else {
                 throw new Error("No data received");
             }
         } catch (error) {
-            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create schedule.");
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create doctor.");
         } finally {
             setIsSubmittingDoctor(false);
         }
@@ -398,6 +453,150 @@ export default function AdminDashboard() {
         });
         setShowEditScheduleForm(true);
         setShowScheduleForm(false);
+    }
+
+    const handleEditDoctor = (doctor) => {
+        setEditedDoctor({
+            id: doctor.id,
+            name: doctor.name || "",
+            email: doctor.email || "",
+            specialization: doctor.specialization || "",
+            phone: doctor.phone || "",
+            room: doctor.room || "",
+            status: doctor.status || ""
+        });
+        setShowEditDoctorForm(true);
+        setShowDoctorForm(false);
+    }
+
+    const submitEditDoctor = async (e) => {
+        e.preventDefault();
+        setIsEditingDoctor(true);
+        try {
+            const res = await api.put(`/api/doctors/${editedDoctor.id}`, editedDoctor, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "Doctor updated successfully");
+                setShowEditDoctorForm(false);
+                setEditedDoctor(null);
+                fetchDoctor();
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to update doctor.");
+        } finally {
+            setIsEditingDoctor(false);
+        }
+    }
+
+    const handleDeleteDoctor = async (doctorId) => {
+        try {
+            const res = await api.delete(`/api/doctors/${doctorId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "Doctor deleted successfully");
+                fetchDoctor(); // Refresh table
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to delete doctor.");
+        }
+    }
+
+    // ========== USER HANDLERS ==========
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+        setIsSubmittingUser(true);
+        try {
+            const res = await api.post('/api/users', newUser, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "User created successfully");
+                setShowUserForm(false);
+                fetchUsers();
+                setNewUser({ name: "", email: "", password: "", role: "user" });
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to create user.");
+        } finally {
+            setIsSubmittingUser(false);
+        }
+    }
+
+    const handleEditUser = (user) => {
+        setEditedUser({
+            id: user.id,
+            name: user.name || "",
+            email: user.email || "",
+            role: user.role || "user",
+            password: ""
+        });
+        setShowEditUserForm(true);
+        setShowUserForm(false);
+    }
+
+    const submitEditUser = async (e) => {
+        e.preventDefault();
+        setIsEditingUser(true);
+        try {
+            const payload = { ...editedUser };
+            if (!payload.password) {
+                delete payload.password;
+            }
+            const res = await api.put(`/api/users/${editedUser.id}`, payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "User updated successfully");
+                setShowEditUserForm(false);
+                setEditedUser(null);
+                fetchUsers();
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to update user.");
+        } finally {
+            setIsEditingUser(false);
+        }
+    }
+
+    const handleDeleteUser = async (userId) => {
+        try {
+            const res = await api.delete(`/api/users/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data) {
+                showToast("success", "Success", res.data.message || "User deleted successfully");
+                fetchUsers();
+            } else {
+                throw new Error("No data received");
+            }
+        } catch (error) {
+            showToast("error", "Error", error.response?.data?.message || error.message || "Failed to delete user.");
+        }
     }
 
     const submitEditSchedule = async (e) => {
@@ -865,21 +1064,143 @@ export default function AdminDashboard() {
                     <div className="mt-1">
                         <div className="mt-1 d-flex justify-content-between align-items-center">
                             <h4 className="me-2">Doctors</h4>
-                            <small className="text-secondary">UNDER DEVELOPMENT !</small>
-
                             <button
                                 className={`btn ${showDoctorForm ? 'btn-secondary' : 'btn-success'}`}
                                 onClick={() => {
                                     setShowDoctorForm(!showDoctorForm);
-                                    // setShowEditScheduleForm(false);
+                                    setShowEditDoctorForm(false);
                                 }}
                             >
                                 {showDoctorForm ? 'Batal' : 'Create Doctor'}
                             </button>
-
                         </div>
 
-                        {doctors ? (
+                        {showEditDoctorForm && editedDoctor ? (
+                            <div className="card p-4 mt-3 shadow-sm border-warning">
+                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 className="mb-0">Edit Dokter</h5>
+                                    <button className="btn-close" onClick={() => setShowEditDoctorForm(false)}></button>
+                                </div>
+                                <Form
+                                    id="edit-doctor-form"
+                                    onSubmit={submitEditDoctor}
+                                    submitText="Update Dokter"
+                                    loadingText="Menyimpan..."
+                                    isSubmitting={isEditingDoctor}
+                                >
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Nama Dokter</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Nama dokter"
+                                            value={editedDoctor.name}
+                                            onChange={(e) => setEditedDoctor({ ...editedDoctor, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Spesialisasi</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Contoh: Dokter Umum"
+                                            value={editedDoctor.specialization}
+                                            onChange={(e) => setEditedDoctor({ ...editedDoctor, specialization: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-4 mb-3">
+                                            <label className="form-label fw-medium">Telepon</label>
+                                            <input
+                                                type="number"
+                                                className="form-control bg-body-secondary"
+                                                placeholder="No. Telepon"
+                                                value={editedDoctor.phone}
+                                                onChange={(e) => setEditedDoctor({ ...editedDoctor, phone: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="col-md-4 mb-3">
+                                            <label className="form-label fw-medium">Status</label>
+                                            <select
+                                                name="status"
+                                                id={`status-${editedDoctor.id}`}
+                                                className="form-select bg-body-secondary"
+                                                value={editedDoctor.status ? editedDoctor.status.toLowerCase() : ""}
+                                                onChange={(e) => setEditedDoctor({ ...editedDoctor, status: e.target.value })}
+                                            >
+                                                <option value="" disabled>Pilih status</option>
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </Form>
+                            </div>
+                        ) : showDoctorForm ? (
+                            <div className="card p-4 mt-3 shadow-sm">
+                                <h5 className="mb-4">Tambah Dokter Baru</h5>
+                                <Form
+                                    id="create-doctor-form"
+                                    onSubmit={handleCreateDoctors}
+                                    submitText="Simpan Dokter"
+                                    loadingText="Menyimpan..."
+                                    isSubmitting={isSubmittingDoctor}
+                                >
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Nama Dokter</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Nama dokter"
+                                            value={newDoctor.name}
+                                            onChange={(e) => setNewDoctor({ ...newDoctor, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Spesialisasi</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Contoh: Dokter Umum (kosongkan jika umum)"
+                                            value={newDoctor.specialization}
+                                            onChange={(e) => setNewDoctor({ ...newDoctor, specialization: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-4 mb-3">
+                                            <label className="form-label fw-medium">Telepon</label>
+                                            <input
+                                                type="number"
+                                                className="form-control bg-body-secondary"
+                                                placeholder="No. Telepon"
+                                                value={newDoctor.phone}
+                                                onChange={(e) => setNewDoctor({ ...newDoctor, phone: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-md-4 mb-3">
+                                            <label className="form-label fw-medium">Status</label>
+                                            <select
+                                                name="status"
+                                                className="form-select bg-body-secondary"
+                                                value={newDoctor.status}
+                                                onChange={(e) => setNewDoctor({ ...newDoctor, status: e.target.value })}
+                                            >
+                                                <option value="" disabled>Pilih status</option>
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </Form>
+                            </div>
+                        ) : doctors.length > 0 ? (
                             <>
                                 <div className="table-responsive">
                                     <table className="table table-bordered mt-3 text-center align-middle">
@@ -889,6 +1210,7 @@ export default function AdminDashboard() {
                                                 <th>Name</th>
                                                 <th>Specialization</th>
                                                 <th>Status</th>
+                                                <th>Phone</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -900,6 +1222,7 @@ export default function AdminDashboard() {
                                                         <td className="text-nowrap">{item.name}</td>
                                                         <td className="text-nowrap">{item.specialization}</td>
                                                         <td className="text-nowrap">{item.status}</td>
+                                                        <td className="text-nowrap">{item.phone}</td>
                                                         <td>
                                                             <button className="btn btn-danger btn-sm w-25" onClick={() => handleDeleteDoctor(item.id)}>Delete</button>
                                                             <button className="btn btn-warning btn-sm w-25 ms-2" onClick={() => handleEditDoctor(item)}>Edit</button>
@@ -934,11 +1257,208 @@ export default function AdminDashboard() {
                 }
                 children5={
                     <div className="mt-1">
-                        <h4>Users</h4>
-                        <p className="text-muted">Users Page is under development !</p>
+                        <div className="mt-1 d-flex justify-content-between align-items-center">
+                            <h4 className="me-2">Users</h4>
+                            <button
+                                className={`btn ${showUserForm ? 'btn-secondary' : 'btn-success'}`}
+                                onClick={() => {
+                                    setShowUserForm(!showUserForm);
+                                    setShowEditUserForm(false);
+                                }}
+                            >
+                                {showUserForm ? 'Batal' : 'Create User'}
+                            </button>
+                        </div>
+
+                        {showEditUserForm && editedUser ? (
+                            <div className="card p-4 mt-3 shadow-sm border-warning">
+                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 className="mb-0">Edit User</h5>
+                                    <button className="btn-close" onClick={() => setShowEditUserForm(false)}></button>
+                                </div>
+                                <Form
+                                    id="edit-user-form"
+                                    onSubmit={submitEditUser}
+                                    submitText="Update User"
+                                    loadingText="Menyimpan..."
+                                    isSubmitting={isEditingUser}
+                                >
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Nama</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Nama user"
+                                            value={editedUser.name}
+                                            onChange={(e) => setEditedUser({ ...editedUser, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Email user"
+                                            value={editedUser.email}
+                                            onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label fw-medium">Role</label>
+                                            <select
+                                                name="role"
+                                                className="form-select bg-body-secondary"
+                                                value={editedUser.role}
+                                                onChange={(e) => setEditedUser({ ...editedUser, role: e.target.value })}
+                                            >
+                                                <option value="user">User</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label fw-medium">Password Baru</label>
+                                            <input
+                                                type="password"
+                                                className="form-control bg-body-secondary"
+                                                placeholder="Kosongkan jika tidak diubah"
+                                                value={editedUser.password}
+                                                onChange={(e) => setEditedUser({ ...editedUser, password: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </Form>
+                            </div>
+                        ) : showUserForm ? (
+                            <div className="card p-4 mt-3 shadow-sm">
+                                <h5 className="mb-4">Tambah User Baru</h5>
+                                <Form
+                                    id="create-user-form"
+                                    onSubmit={handleCreateUser}
+                                    submitText="Simpan User"
+                                    loadingText="Menyimpan..."
+                                    isSubmitting={isSubmittingUser}
+                                >
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Nama</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Nama user"
+                                            value={newUser.name}
+                                            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label fw-medium">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-control bg-body-secondary"
+                                            placeholder="Email user"
+                                            value={newUser.email}
+                                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label fw-medium">Password</label>
+                                            <input
+                                                type="password"
+                                                className="form-control bg-body-secondary"
+                                                placeholder="Min. 8 karakter"
+                                                value={newUser.password}
+                                                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label fw-medium">Role</label>
+                                            <select
+                                                name="role"
+                                                className="form-select bg-body-secondary"
+                                                value={newUser.role}
+                                                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                                            >
+                                                <option value="user">User</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </Form>
+                            </div>
+                        ) : users.length > 0 ? (
+                            <>
+                                <div className="table-responsive">
+                                    <table className="table table-bordered mt-3 text-center align-middle">
+                                        <thead className="table-light">
+                                            <tr className="text-nowrap">
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Email Verified</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {users.map((item) => {
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td className="text-nowrap">{item.id}</td>
+                                                        <td className="text-nowrap">{item.name}</td>
+                                                        <td className="text-nowrap">{item.email}</td>
+                                                        <td className="text-nowrap">
+                                                            <span className={`badge ${item.role === 'admin' ? 'bg-danger' : 'bg-primary'}`}>
+                                                                {item.role}
+                                                            </span>
+                                                        </td>
+                                                        <td className="text-nowrap">
+                                                            {item.email_verified_at ? (
+                                                                <span className="badge bg-success">Verified</span>
+                                                            ) : (
+                                                                <span className="badge bg-warning text-dark">Unverified</span>
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            <button className="btn btn-danger btn-sm w-15" onClick={() => handleDeleteUser(item.id)}>Delete</button>
+                                                            <button className="btn btn-warning btn-sm w-25 ms-2" onClick={() => handleEditUser(item)}>Edit</button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="d-flex justify-content-between align-items-center mt-3">
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        onClick={handlePrevPageUser}
+                                        disabled={pagination.users.currentPage === 1}>
+                                        Previous
+                                    </button>
+                                    <span>Page {pagination.users.currentPage} of {pagination.users.totalPages}</span>
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        onClick={handleNextPageUser}
+                                        disabled={pagination.users.currentPage === pagination.users.totalPages}>
+                                        Next
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <p>No Users found.</p>
+                        )}
                     </div>
                 }
             />
-        </div>
+        </div >
     );
 }

@@ -8,6 +8,7 @@ use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class DoctorController extends Controller
 {
@@ -101,10 +102,10 @@ class DoctorController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:255',
             'specialization' => 'string|max:255',
-            'phone' => 'integer|min:9|unique:doctors,phone',
-            'email' => 'email|unique:doctors,email',
+            'phone' => ['integer', 'min:9', Rule::unique('doctors')->ignore($doctor->id)],
+            'email' => ['email', Rule::unique('doctors')->ignore($doctor->id)],
             'schedule_id' => 'integer|exists:schedules,id',
-            'room' => 'nullable|string|digits_between:1,3'
+            'status' => 'nullable|string|in:active,inactive'
         ]);
 
         if ($validator->fails()) {
