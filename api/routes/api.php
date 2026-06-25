@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/queues', [QueueController::class, 'show']);
     Route::get('/queue', [QueueController::class, 'index']);
     Route::get('/user', [UserController::class, 'profile']);
+    Route::put('/user/password', [UserController::class, 'updatePassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Route::get('/reservations', [ReservationController::class, 'getAllReservations']);

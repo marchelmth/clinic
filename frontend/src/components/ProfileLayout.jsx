@@ -14,6 +14,13 @@ export default function Profile() {
     const [email, setEmail] = useState("");
     const [emailVerified, setEmailVerified] = useState(false);
 
+    // Password States
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+    const [isEditPassword, setIsEditPassword] = useState(false);
+
     useEffect(() => {
         let mounted = true;
 
@@ -115,6 +122,63 @@ export default function Profile() {
         }
     };
 
+    const handleUpdatePasswordClick = () => {
+        setIsEditPassword(true);
+    };
+
+    const handleCancelPasswordClick = () => {
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setIsEditPassword(false);
+    };
+
+    const handleSavePasswordClick = async () => {
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            showToast("error", "Validasi Gagal", "Semua kolom password harus diisi.");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showToast("error", "Validasi Gagal", "Konfirmasi password baru tidak cocok.");
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            showToast("error", "Validasi Gagal", "Password baru minimal 8 karakter.");
+            return;
+        }
+
+        setIsSubmittingPassword(true);
+        try {
+            await api.put(
+                `/api/user/password`,
+                {
+                    old_password: oldPassword,
+                    new_password: newPassword,
+                    new_password_confirmation: confirmPassword
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setOldPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setIsEditPassword(false);
+            showToast("success", "Berhasil", "Password berhasil diperbarui!");
+        } catch (error) {
+            console.error("Error updating password:", error);
+            const errorMsg = error.response?.data?.message || error.message || "Gagal memperbarui password.";
+            showToast("error", "Gagal Menyimpan", errorMsg);
+        } finally {
+            setIsSubmittingPassword(false);
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem("auth_token");
         window.location.href = "/";
@@ -175,8 +239,8 @@ export default function Profile() {
             </div>
 
             {/* Right Side: Account Details form */}
-            <div className="col-12 col-lg-8">
-                <div className="card border-0 shadow-sm rounded-4 h-100">
+            <div className="col-12 col-lg-8 d-flex flex-column gap-4">
+                <div className="card border-0 shadow-sm rounded-4">
                     <div className="card-body p-4 p-md-5">
                         <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4 pb-3 border-bottom">
                             <div>
@@ -267,6 +331,123 @@ export default function Profile() {
                                 </div>
                             </div>
                         </form>
+
+                        <hr className="my-5 opacity-25" />
+
+                        {/* Password Update Section */}
+                        <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4 pb-3 border-bottom">
+                            <div>
+                                <h4 className="fw-bold mb-1 text-dark">Keamanan Akun</h4>
+                                <p className="text-muted small mb-0">Perbarui password Anda untuk menjaga keamanan akun</p>
+                            </div>
+                            <div>
+                                {!isEditPassword ? (
+                                    <button
+                                        type="button"
+                                        onClick={handleUpdatePasswordClick}
+                                        className="btn btn-primary px-2 py-2 rounded-3 fw-bold d-inline-flex align-items-center gap-2"
+                                    >
+                                        <i className="bi bi-shield-lock" />
+                                        Ubah Password
+                                    </button>
+                                ) : (
+                                    <div className="d-flex gap-2">
+                                        <button
+                                            type="button"
+                                            disabled={isSubmittingPassword}
+                                            onClick={handleCancelPasswordClick}
+                                            className="btn btn-outline-secondary px-2 py-2 rounded-3 fw-bold"
+                                        >
+                                            Batal
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={isSubmittingPassword}
+                                            onClick={handleSavePasswordClick}
+                                            className="btn btn-success px-2 py-2 rounded-3 fw-bold d-inline-flex align-items-center gap-2"
+                                        >
+                                            {isSubmittingPassword ? (
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+                                                    Menyimpan...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <i className="bi bi-check2-circle" />
+                                                    Simpan
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {isEditPassword ? (
+                            <form onSubmit={(e) => e.preventDefault()}>
+                                <div className="mb-4">
+                                    <label htmlFor="inputOldPassword" className="form-label fw-bold text-secondary mb-2">
+                                        Password Lama
+                                    </label>
+                                    <div className="input-group">
+                                        <span className="input-group-text bg-white text-secondary border-end-0">
+                                            <i className="bi bi-key fs-5" />
+                                        </span>
+                                        <input
+                                            id="inputOldPassword"
+                                            type="password"
+                                            disabled={isSubmittingPassword}
+                                            className="form-control py-2.5 bg-white border-start-0"
+                                            value={oldPassword}
+                                            onChange={(e) => setOldPassword(e.target.value)}
+                                            placeholder="Masukkan password lama Anda"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label htmlFor="inputNewPassword" className="form-label fw-bold text-secondary mb-2">
+                                        Password Baru
+                                    </label>
+                                    <div className="input-group">
+                                        <span className="input-group-text bg-white text-secondary border-end-0">
+                                            <i className="bi bi-lock fs-5" />
+                                        </span>
+                                        <input
+                                            id="inputNewPassword"
+                                            type="password"
+                                            disabled={isSubmittingPassword}
+                                            className="form-control py-2.5 bg-white border-start-0"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            placeholder="Masukkan password baru Anda"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mb-3">
+                                    <label htmlFor="inputConfirmPassword" className="form-label fw-bold text-secondary mb-2">
+                                        Konfirmasi Password Baru
+                                    </label>
+                                    <div className="input-group">
+                                        <span className="input-group-text bg-white text-secondary border-end-0">
+                                            <i className="bi bi-lock-fill fs-5" />
+                                        </span>
+                                        <input
+                                            id="inputConfirmPassword"
+                                            type="password"
+                                            disabled={isSubmittingPassword}
+                                            className="form-control py-2.5 bg-white border-start-0"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="Ketik ulang password baru Anda"
+                                        />
+                                    </div>
+                                </div>
+                            </form>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 </div>
             </div>
