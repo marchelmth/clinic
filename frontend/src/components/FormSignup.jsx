@@ -74,7 +74,7 @@ export default function FormSignup() {
       setEmail("");
       setPassword("");
       setRepeatPassword("");
-      showToast("success", "Sukses", "Akun berhasil dibuat. Cek email untuk verifikasi.");
+      showToast("success", "Sukses", data.message);
       setTimeout(() => {
         window.location.href = "/wait-verify-email";
       }, 900);
