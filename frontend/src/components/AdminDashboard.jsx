@@ -513,7 +513,6 @@ export default function AdminDashboard() {
         }
     }
 
-    // ========== USER HANDLERS ==========
     const handleCreateUser = async (e) => {
         e.preventDefault();
         setIsSubmittingUser(true);
@@ -666,9 +665,9 @@ export default function AdminDashboard() {
             <Tabs
                 label1="Reservations"
                 label2="Queues"
-                label3="Schedule" // UNDER DEVELOPMENT !
-                label4="Doctors" //UNDER DEVELOPMENT !
-                label5="Users" //UNDER DEVELOPMENT !
+                label3="Schedule"
+                label4="Doctors"
+                label5="Users"
                 children1={
                     <>
                         {reservations.length > 0 ? (
@@ -1428,7 +1427,7 @@ export default function AdminDashboard() {
                                                         </td>
                                                         <td>
                                                             <button className="btn btn-danger btn-sm w-15" onClick={() => handleDeleteUser(item.id)}>Delete</button>
-                                                            <button className="btn btn-warning btn-sm w-25 ms-2" onClick={() => handleEditUser(item)}>Edit</button>
+                                                            <button className="btn btn-warning btn-sm w-20 ms-2" onClick={() => handleEditUser(item)}>Edit</button>
                                                         </td>
                                                     </tr>
                                                 );
