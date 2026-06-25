@@ -32,6 +32,29 @@ class UserController extends Controller
         return ApiResponse::success("Data User", $user, 200);
     }
 
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error("Validasi gagal", 422, $validator->errors());
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return ApiResponse::error("Password lama salah", 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return ApiResponse::success("Password berhasil diperbarui", null, 200);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
